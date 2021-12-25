@@ -56,3 +56,6 @@ Returns DataFrame with Columns: *'strike', 'direction', 'bidIV', 'askIV', 'delta
 
 **Example Call:**
 `multi_expiry_skew = csuite.get_omm_skew(client,['211224','211231','220128'],[['35000','40000','42000','44000','46000','48000','50000','52000','54000','56000','58000','60000','65000','70000'],['32000','36000','40000','44000','48000','52000','56000','60000','65000','75000','80000'],['30000','35000','40000','45000','50000','55000','60000','65000','70000','80000']])`
+
+#### def IV_skew(data, price)
+This function transforms the output of *get_omm_skew* (data/table format) into a symetric put-call Implied volatility array. It returns an array with the IV of Puts under the price and IV of Calls over the price. As price, pass current price. 

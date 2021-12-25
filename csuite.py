@@ -103,38 +103,6 @@ def get_LiveSpread(client, symbol):
     mp = float(client.futures_mark_price(symbol=symbol)['markPrice'])
     return ((mp - float(client.get_avg_price(symbol=symbol)['price']))/mp)*100
 
-
-# OPTIONS DATA
-def get_options_skew(client, maturity, strikes):
-    # This function returns the skew for BTC Vanilla options in easily readable CSV format
-    cols = ['strike', 'direction', 'bidIV', 'askIV', 'delta', 'gamma', 'theta', 'vega']
-    frame = pd.DataFrame(columns=cols)
-    counter = 0
-    for direction in ['C', 'P']:
-        for strike in strikes:
-            datapoint = client.options_mark_price(symbol="BTC-{}-{}-{}".format(maturity, strike, direction))
-            tmp_frame = pd.DataFrame(datapoint['data'][0], index=[0])
-            frame.loc[counter] = [strike, direction, tmp_frame['bidIV'].values[0], tmp_frame['askIV'].values[0], tmp_frame['delta'].values[0], tmp_frame['gamma'].values[0], tmp_frame['theta'].values[0], tmp_frame['vega'].values[0]]
-            counter = counter + 1
-
-    for label in cols:
-        if label == 'direction':
-            pass
-        else:
-            frame[label] = pd.to_numeric(frame[label], downcast="float")
-
-    return frame
-
-
-def get_omm_skew(client, maturities, strikes):
-    data_array = []
-    count = 0
-    for expiry in maturities:
-        data_array.append(get_options_skew(client, expiry, strikes[count]))
-        count = count + 1
-    return data_array
-
-
 def get_FuturesLS(client, symbol, period):
     frame = pd.DataFrame()
     lsp = client.futures_top_longshort_position_ratio(symbol=symbol,period=period)
@@ -169,3 +137,52 @@ def get_FuturesFundingRate(client, ticker, period):
     frame['FundingRate'] = frame['FundingRate'] * 100
 
     return frame
+
+
+# OPTIONS DATA
+def get_options_skew(client, maturity, strikes):
+    # This function returns the skew for BTC Vanilla options in easily readable CSV format
+    cols = ['strike', 'direction', 'bidIV', 'askIV', 'delta', 'gamma', 'theta', 'vega']
+    frame = pd.DataFrame(columns=cols)
+    counter = 0
+    for direction in ['C', 'P']:
+        for strike in strikes:
+            datapoint = client.options_mark_price(symbol="BTC-{}-{}-{}".format(maturity, strike, direction))
+            tmp_frame = pd.DataFrame(datapoint['data'][0], index=[0])
+            frame.loc[counter] = [strike, direction, tmp_frame['bidIV'].values[0], tmp_frame['askIV'].values[0], tmp_frame['delta'].values[0], tmp_frame['gamma'].values[0], tmp_frame['theta'].values[0], tmp_frame['vega'].values[0]]
+            counter = counter + 1
+
+    for label in cols:
+        if label == 'direction':
+            pass
+        else:
+            frame[label] = pd.to_numeric(frame[label], downcast="float")
+
+    return frame
+
+
+def get_omm_skew(client, maturities, strikes):
+    data_array = []
+    count = 0
+    for expiry in maturities:
+        data_array.append(get_options_skew(client, expiry, strikes[count]))
+        count = count + 1
+    return data_array
+
+def IV_skew(data, price):
+    IV_array = []
+    for i in range(0,3):
+        op_data = data[i]
+        calls, puts  = op_data[op_data['direction'] == 'C'], op_data[op_data['direction'] == 'P']
+        call_IV, put_IV = calls[calls.strike > price]['askIV'], puts[puts.strike <= price]['askIV']
+        vol_skew = pd.DataFrame(columns=['IV'])
+        count = 0
+        for value in put_IV.values:
+            vol_skew.loc[count] = value
+            count = count + 1
+        for value in call_IV.values:
+            vol_skew.loc[count] = value
+            count = count + 1
+        vol_skew = vol_skew.set_index(op_data[op_data['direction']=='C'].strike)
+        IV_array.append(vol_skew)
+        return IV_array

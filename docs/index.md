@@ -10,7 +10,7 @@
 
 # Documentation
 
-## Available BConnector Functions
+## BConnector Functions
 
 #### connect_client(filename)
 The connect client function takes a formated JSON file as input and returns a Binance client object. This returned object is necessary input in most following functions.
@@ -63,7 +63,7 @@ Returns DataFrame with Columns: *'strike', 'direction', 'bidIV', 'askIV', 'delta
 #### IV_skew(data, price)
 This function transforms the output of *get_omm_skew* (data/table format) into a symetric put-call Implied volatility array. It returns an array with the IV of Puts under the price and IV of Calls over the price. As price, pass current price. 
 
-## Available Account Managment Functions
+##Account Managment Functions
 
 ### Spot Data
 

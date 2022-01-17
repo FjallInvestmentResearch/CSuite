@@ -87,6 +87,6 @@ Shows current open spot balances in Binance wallet.
 Requires the snapshot from the *above* function as input, then runs `get_asset_status()` for listed assets and returns a built status frame. 
 Shows status and performance of all assets present in snapshot. 
 
-### wallet_composition(client, snap):
+#### wallet_composition(client, snap):
 Requires snapshot. Returns value weighted portfolio in Pandas DataFrame format. 
 

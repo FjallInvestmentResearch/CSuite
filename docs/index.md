@@ -63,7 +63,7 @@ Returns DataFrame with Columns: *'strike', 'direction', 'bidIV', 'askIV', 'delta
 #### IV_skew(data, price)
 This function transforms the output of *get_omm_skew* (data/table format) into a symetric put-call Implied volatility array. It returns an array with the IV of Puts under the price and IV of Calls over the price. As price, pass current price. 
 
-##Account Managment Functions
+## Account Managment Functions
 
 ### Spot Data
 

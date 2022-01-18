@@ -2,10 +2,10 @@ import backtrader as bt
 
 
 # Money Flow Indicator
+# Retrieved through BackTrader recopies
+# https://www.backtrader.com/recipes/indicators/mfi/mfi/
+# https://school.stockcharts.com/doku.php?id=technical_indicators:money_flow_index_mfi
 class MFI(bt.Indicator):
-    # Retrieved through BackTrader recopies
-    # https://www.backtrader.com/recipes/indicators/mfi/mfi/
-    # https://school.stockcharts.com/doku.php?id=technical_indicators:money_flow_index_mfi
     lines = ('mfi',)
     params = dict(period=14)
 
@@ -41,9 +41,8 @@ class StochRSI(bt.Indicator):
 
 
 # Chaikin Money Flow
+# Reference: https://backtest-rookies.com/2018/06/29/backtrader-chaikin-money-flow-indicator/
 class ChaikinMoneyFlow(bt.Indicator):
-
-    # source: https://backtest-rookies.com/2018/06/29/backtrader-chaikin-money-flow-indicator/
     lines = ('money_flow',)
     params = (('len', 20),)
     plotlines = dict(money_flow=dict(_name='CMF', color='green', alpha=0.50))
@@ -58,11 +57,13 @@ class ChaikinMoneyFlow(bt.Indicator):
         h = self.data.high
         l = self.data.low
         v = self.data.volume
-        self.data.ad = bt.If(bt.Or(bt.And(c == h, c == l), h == l), 0, ((2*c-l-h)/(h-l))*v)
-        self.lines.money_flow = bt.indicators.SumN(self.data.ad, period=self.p.len) / bt.indicators.SumN(self.data.volume, period=self.p.len)
+        self.data.ad = bt.If(bt.Or(bt.And(c == h, c == l), h == l), 0, ((2 * c - l - h) / (h - l)) * v)
+        self.lines.money_flow = bt.indicators.SumN(self.data.ad, period=self.p.len) / bt.indicators.SumN(
+            self.data.volume, period=self.p.len)
 
 
 # Volume Oscillator
+# Reference: https://www.tradingview.com/chart/n3x6FXov/?symbol=BITSTAMP%3ABTCUSD&solution=43000591350
 class VolumeOscillator(bt.Indicator):
     lines = ('volume_oscillator',)
     params = dict(
@@ -73,4 +74,25 @@ class VolumeOscillator(bt.Indicator):
     def __init__(self):
         self.fastVO = bt.indicators.SMA(self.data.volume, period=self.p.fast)
         self.slowVO = bt.indicators.SMA(self.data.volume, period=self.p.slow)
-        self.l.volume_oscillator = 100*(self.fastVO - self.slowVO) /self.slowVO
+        self.l.volume_oscillator = 100 * (self.fastVO - self.slowVO) / self.slowVO
+
+
+# Klinger Volume Oscillator
+# Reference: https://backtest-rookies.com/2018/05/18/backtrader-klinger-volume-oscillator/
+class KlingerOsc(bt.Indicator):
+    lines = ('sig', 'kvo')
+    params = dict(
+        kvoFast=34,
+        kvoSlow=55,
+        sigPeriod=13,
+    )
+
+    def __init__(self):
+        self.plotinfo.plotyhlines = [0]
+        self.addminperiod(55)
+        self.data.hlc3 = (self.data.high + self.data.low + self.data.close) / 3
+        self.data.sv = bt.If((self.data.hlc3(0) - self.data.hlc3(-1)) / self.data.hlc3(-1) >= 0, self.data.volume,
+                             -self.data.volume)
+        self.lines.kvo = bt.indicators.EMA(self.data.sv, period=self.p.kvoFast) - bt.indicators.EMA(self.data.sv,
+                                                                                                    period=self.p.kvoSlow)
+        self.lines.sig = bt.indicators.EMA(self.lines.kvo, period=self.p.sigPeriod)

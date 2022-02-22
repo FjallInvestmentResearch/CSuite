@@ -90,3 +90,12 @@ Shows status and performance of all assets present in snapshot.
 #### wallet_composition(client, snap):
 Requires snapshot. Returns value weighted portfolio in Pandas DataFrame format. 
 
+## Limit Order Book 
+
+### Spot Order Book
+
+#### view_book(symbol, client)
+Directly interfaces with the API to get a snapshot of the Limit Order Book (LOB) at a depth of 100 ticks (defualt). It parses JSON response and returns DataFrame and timestamp string. The return frame is in three column ladder design with bid_volume, quote and, ask_volume. 
+
+#### monitor_book(symbol, client, limit)
+Function uses `view_book()` continously in a loop and returns LOB metrics: mid-point, spread, book balance, WA bid, WA ask, best bid. It 'monitors' the health of the book by writting down vitals in real-time. It works until it hits its loop limit specified by limit (int). 

@@ -1,4 +1,5 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
 def view_book(symbol, client):
@@ -22,6 +23,28 @@ def view_book(symbol, client):
     frame = pd.DataFrame(data=list(zip(bid_vol, price, ask_vol)), columns=['bid_vol', 'quote', 'ask_vol'], index=range(0, 200))
 
     return frame, order_snap['lastUpdateId']
+
+
+def plot_book(book, ticker, limit=500, save=True, path='', plot=True):
+
+    book, timestamp = book[0], book[1]
+    best_ask, best_bid = book.iloc[int(limit/2)-1], book.iloc[int(limit/2)]
+    midpoint = ((best_bid['bid_vol']*best_ask['quote'] + best_ask['ask_vol']*best_bid['quote'])/(best_ask['ask_vol']+best_bid['bid_vol']))
+    ref_move = [round(((quote-midpoint)/midpoint)*100, 3) for quote in book['quote']]
+
+    if plot:
+        plt.bar(book['quote'], book['ask_vol'], color='red', label='Ask')
+        plt.bar(book['quote'], book['bid_vol'], color='green', label='Bid')
+        plt.axvline(midpoint, color='black', linewidth=1, linestyle='--', label='Mid')
+        plt.ylabel('Volume (# BTC in LOB)')
+        plt.xlabel('Quote ($)')
+        plt.title('Top of LOB in {}'.format(ticker))
+        plt.legend()
+        plt.show()
+        if save:
+            plt.savefig('{}book{}.jpg'.format(path, ticker), dpi=800)
+
+    return book
 
 
 def monitor_book(symbol, client, limit):

@@ -1,5 +1,5 @@
 import pandas as pd
-import connector
+import CTrader
 
 
 # Replaces Order History module
@@ -52,6 +52,7 @@ def get_trade_history(client, symbol):
 
     return data
 
+
 # Calls Trade History for two currencies and does FX conversion (base & exotic). Default to USDT & EUR.
 def adjust_fx_trades(client, symbol):
     data_array = []
@@ -63,7 +64,7 @@ def adjust_fx_trades(client, symbol):
         except:
             data_array.append(pd.DataFrame(columns=['Time', 'Symbol', 'ID', 'Price', 'Qty', 'Cost', 'Commission', 'Side']))
     # get FOREX rate to pass into conversion
-    forex_rate = csuite.get_SpotKlines(client, '{}USDT'.format(currencies[1]), '1d')
+    forex_rate = CTrader.connector.get_SpotKlines(client, '{}USDT'.format(currencies[1]), '1d')
     spec_array, com = [], []
     # convert Purchase Price (PRICE) & Commission (COMMISSION) from FX to base
     for i in range(0, len(data_array[1])):
@@ -78,6 +79,7 @@ def adjust_fx_trades(client, symbol):
     data['adjCost'] = data['Cost'] + data['Commission']
 
     return data
+
 
 # Returns status of active & inactive positioning on SPOT asset
 def get_asset_status(client, symbol):
@@ -119,6 +121,7 @@ def get_asset_status(client, symbol):
 
     return data
 
+
 # Returns Frame with current Spot wallet snapshot
 def get_account_snapshot(client, type):
     # Calls base client via connectpr
@@ -135,6 +138,7 @@ def get_account_snapshot(client, type):
     data['Qty'] = pd.to_numeric(qty)
 
     return data
+
 
 # Returns detailed trading balance of the Spot wallet constituents
 def get_spot_balances(client, snap):
@@ -155,6 +159,7 @@ def get_spot_balances(client, snap):
     #frame = frame[frame.TPL != 0]
 
     return [frame, account_value]
+
 
 # Returns Value Weighted Spot composition
 def wallet_composition(client, snap):

@@ -1,35 +1,41 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
+# Orderbook Functions
 
-def view_book(symbol, client):
+
+# Calls order book with specified depth (limit) on a pair (symbol). Returns ladder like dataframe
+def view_book(symbol, client, limit=100):
     # call order book JSON read
-    order_snap = client.get_order_book(symbol=symbol, limit=100)
+    order_snap = client.get_order_book(symbol=symbol, limit=limit)
 
     # Parse JSON structure
     bid_prices, bid_vol = [], []
     ask_prices, ask_vol = [], []
-    for k in range(0, 100):
+    for k in range(0, limit):
         bid_prices.append(float(order_snap['bids'][k][0]))
         bid_vol.append(float(order_snap['bids'][k][1]))
         ask_prices.append(float(order_snap['asks'][k][0]))
         ask_vol.append(float(order_snap['asks'][k][1]))
 
     # format ladder
-    bid_vol = ([0.0 for i in range(0, 100)] + bid_vol)
+    bid_vol = ([0.0 for i in range(0, limit)] + bid_vol)
     price = ask_prices[::-1] + bid_prices
-    ask_vol = (ask_vol + [0.0 for i in range(0, 100)])
+    ask_vol = (ask_vol + [0.0 for i in range(0, limit)])
     # create & return pandas DF object
-    frame = pd.DataFrame(data=list(zip(bid_vol, price, ask_vol)), columns=['bid_vol', 'quote', 'ask_vol'], index=range(0, 200))
+    frame = pd.DataFrame(data=list(zip(bid_vol, price, ask_vol)), columns=['bid_vol', 'quote', 'ask_vol'],
+                         index=range(0, limit*2))
 
     return frame, order_snap['lastUpdateId']
 
 
-def plot_book(book, ticker, limit=500, save=True, path='', plot=True):
+# Plots the resting limit book orders currently active for a specified depth. Returns plt plot/image with bars of volume
+def plot_book(book, ticker, limit=500, plot=True, save=True, path=''):
 
     book, timestamp = book[0], book[1]
     best_ask, best_bid = book.iloc[int(limit/2)-1], book.iloc[int(limit/2)]
-    midpoint = ((best_bid['bid_vol']*best_ask['quote'] + best_ask['ask_vol']*best_bid['quote'])/(best_ask['ask_vol']+best_bid['bid_vol']))
+    midpoint = ((best_bid['bid_vol']*best_ask['quote'] + best_ask['ask_vol']*best_bid['quote'])/
+                (best_ask['ask_vol']+best_bid['bid_vol']))
     ref_move = [round(((quote-midpoint)/midpoint)*100, 3) for quote in book['quote']]
 
     if plot:
@@ -47,13 +53,14 @@ def plot_book(book, ticker, limit=500, save=True, path='', plot=True):
     return book
 
 
-def swipe_cost(book, size, pair='NA', side='BUY', ref='A'):
+# Function which provides the Swipe cost of walking the orderbook for a specified lot size (size). Requires book object
+def sweep_cost(book, size, pair='NA', side='BUY', ref='A'):
 
     asks = book['ask_vol'][0:int(len(book)/2)]
     bids = book['bid_vol'][int(len(book)/2):len(book)]
     best_ask, best_bid = book.iloc[int(len(book)/2)-1], book.iloc[int(len(book)/2)]
     midpoint = ((best_bid['bid_vol']*best_ask['quote'] + best_ask['ask_vol']*best_bid['quote'])
-                /(best_ask['ask_vol']+best_bid['bid_vol']))
+                / (best_ask['ask_vol']+best_bid['bid_vol']))
 
     fill = 0
 
@@ -67,10 +74,12 @@ def swipe_cost(book, size, pair='NA', side='BUY', ref='A'):
     elif side == 'SELL':
         for i in range(len(asks), len(book)):
             fill = fill + book['bid_vol'][i]
-
             if fill >= size:
                 price = (book['quote'][i-1])
                 break
+
+    else:
+        price = 0
 
     if ref == 'A':
         ref_price = best_ask['quote']
@@ -91,6 +100,32 @@ def swipe_cost(book, size, pair='NA', side='BUY', ref='A'):
     return fr
 
 
+# Plots the Expected Swipe Cost (ESC) of sell & buy orders for orders up to size max. Returns plt plot.
+def plot_esc(book, ticker, max=100, inc=1, plot=True, save=True, path=''):
+    results = []
+    for i in range(-max, max, inc):
+        if i < 0:
+            side = 'SELL'
+            results.append(sweep_cost(book, abs(i), ticker, side, ref='B').iloc[4]['Data'])
+        elif i > 0:
+            side = 'BUY'
+            results.append(sweep_cost(book, abs(i), ticker, side, ref='A').iloc[4]['Data'])
+
+    if plot:
+        plt.plot([i for i in range(0, max)], results[0:max][::-1], color='r', label='Selling')
+        plt.plot([i for i in range(0, max)], results[max-1:max*2], color='g', label='Buying')
+        plt.legend()
+        plt.ylim(0, 0.35)
+        plt.xlabel('Lot Size (Units)')
+        plt.ylabel('Expected Sweep Cost (%)')
+        plt.title('Expected Sweep Cost by Lot Size')
+        plt.tight_layout()
+        if save:
+            plt.savefig('{}ESC_{}.jpg'.format(path, ticker), dpi=800)
+        plt.show()
+
+
+# Continuously monitors the book using view_book() function and records vitals
 def monitor_book(symbol, client, limit):
     spread, mid_point, timestamp = [], [], []
     ask_mean, bid_mean = [], []

@@ -47,6 +47,50 @@ def plot_book(book, ticker, limit=500, save=True, path='', plot=True):
     return book
 
 
+def swipe_cost(book, size, pair='NA', side='BUY', ref='A'):
+
+    asks = book['ask_vol'][0:int(len(book)/2)]
+    bids = book['bid_vol'][int(len(book)/2):len(book)]
+    best_ask, best_bid = book.iloc[int(len(book)/2)-1], book.iloc[int(len(book)/2)]
+    midpoint = ((best_bid['bid_vol']*best_ask['quote'] + best_ask['ask_vol']*best_bid['quote'])
+                /(best_ask['ask_vol']+best_bid['bid_vol']))
+
+    fill = 0
+
+    if side == 'BUY':
+        for i in range(len(asks)-1, 0, -1):
+            fill = fill + book['ask_vol'][i]
+            if fill >= size:
+                price = (book['quote'][i+1])
+                break
+
+    elif side == 'SELL':
+        for i in range(len(asks), len(book)):
+            fill = fill + book['bid_vol'][i]
+
+            if fill >= size:
+                price = (book['quote'][i-1])
+                break
+
+    if ref == 'A':
+        ref_price = best_ask['quote']
+    elif ref == 'B':
+        ref_price = best_bid['quote']
+    elif ref == 'M':
+        ref_price = midpoint
+    else:
+        ref_price = best_ask['quote']
+
+    change = (abs((price-ref_price)/ref_price).round(6))
+    rows = ['Pair', 'Size', 'Ref. Price', 'Expected Price', 'Cost (%)']
+    datums = [pair, size, ref_price, price, change*100]
+    fr = pd.DataFrame()
+    fr['Index'] = rows
+    fr['Data'] = datums
+
+    return fr
+
+
 def monitor_book(symbol, client, limit):
     spread, mid_point, timestamp = [], [], []
     ask_mean, bid_mean = [], []

@@ -1,6 +1,1 @@
-import orderbook
-import accountManager
-import connector
-import indicators
-import portfolio
-import strategies
+from CTrader.CSuite import orderbook, strategies

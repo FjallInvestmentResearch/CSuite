@@ -64,7 +64,7 @@ def adjust_fx_trades(client, symbol):
         except:
             data_array.append(pd.DataFrame(columns=['Time', 'Symbol', 'ID', 'Price', 'Qty', 'Cost', 'Commission', 'Side']))
     # get FOREX rate to pass into conversion
-    forex_rate = CTrader.connector.get_SpotKlines(client, '{}USDT'.format(currencies[1]), '1d')
+    forex_rate = CTrader.ctrader.connector.get_SpotKlines(client, '{}USDT'.format(currencies[1]), '1d')
     spec_array, com = [], []
     # convert Purchase Price (PRICE) & Commission (COMMISSION) from FX to base
     for i in range(0, len(data_array[1])):

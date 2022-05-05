@@ -1,5 +1,6 @@
 import backtrader as bt
-from CTrader import indicators
+from CTrader.CSuite import indicators
+
 
 # Proprietary Backtrader Strategies for use with CTester
 

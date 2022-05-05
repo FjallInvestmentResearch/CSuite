@@ -63,6 +63,7 @@ def build_ledger(client, tickers):
         frame.loc[length] = (get_symbol_info(client, ticker))
 
     frame = frame.astype({"icebergAllowed": bool, "ocoAllowed": bool, "allowTrailingStop": bool, "tickSize": float, "up": float, "down": float, "minQty": float, "maxQty": float, "stepSize": float, "minNotional": float, "icebergParts": int, "maxNumOrders": int})
+    frame = frame.set_index('symbol')
 
     return frame
 

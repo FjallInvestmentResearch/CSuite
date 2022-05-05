@@ -227,4 +227,4 @@ class PostOrder:
             return False
 
     def submit(self):
-        return self.create_order(symbol=self.symbol, side=self.side, type=self.type, quantity=abs(self.size), price=str(self.price), timeInForce=None)
+        return self.client.create_order(symbol=self.symbol, side=self.side, type=self.type, quantity=abs(self.size), price=str(self.price), timeInForce=None)

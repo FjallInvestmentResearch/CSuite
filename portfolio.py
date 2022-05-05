@@ -1,4 +1,4 @@
-from CTrader.CSuite import connector
+from CTrader import connector
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt

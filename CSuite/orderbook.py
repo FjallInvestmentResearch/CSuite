@@ -29,8 +29,46 @@ def view_book(symbol, client, limit=100):
     return frame, order_snap['lastUpdateId']
 
 
+# Returns the best bid and ask with resting limit volume, designed for fast access.
+def get_quote(client, ticker):
+    order_snap = client.get_order_book(symbol=ticker, limit=5)
+    best_ask, best_bid = order_snap['asks'][0], order_snap['bids'][0]
+    return [best_ask, best_bid]
+
+
+# Gets static info on exchange parameters for specified symbol.
+def get_symbol_info(client, ticker):
+    info = client.get_symbol_info(ticker)
+    datums = []
+    tags = ['symbol', 'status', 'icebergAllowed', 'ocoAllowed', 'allowTrailingStop', 'tickSize', 'up',
+            'down', 'minQty', 'maxQty', 'stepSize', 'minNotional', 'icebergParts', 'maxNumOrders']
+    filters = [['PRICE_FILTER', ['tickSize']], ['PERCENT_PRICE', ['multiplierUp','multiplierDown']],
+               ['LOT_SIZE', ['minQty', 'maxQty', 'stepSize']], ['MIN_NOTIONAL',['minNotional']], ['ICEBERG_PARTS', ['limit']], ['MAX_NUM_ORDERS', ['maxNumOrders']]]
+    for k in range(0, 5):
+        datums.append(info[tags[k]])
+    for i in range(0, 5):
+        for key in filters[i][1]:
+            datums.append(info['filters'][i][key])
+    datums.append(info['filters'][7]['maxNumOrders'])
+
+    return datums
+
+
+# Builds the trading parameter ledger for an array of symbols.
+def build_ledger(client, tickers):
+    frame = pd.DataFrame(columns=['symbol', 'status', 'icebergAllowed', 'ocoAllowed', 'allowTrailingStop', 'tickSize', 'up',
+                                  'down', 'minQty', 'maxQty', 'stepSize', 'minNotional', 'icebergParts', 'maxNumOrders'])
+    for ticker in tickers:
+        length = len(frame)
+        frame.loc[length] = (get_symbol_info(client, ticker))
+
+    frame = frame.astype({"icebergAllowed": bool, "ocoAllowed": bool, "allowTrailingStop": bool, "tickSize": float, "up": float, "down": float, "minQty": float, "maxQty": float, "stepSize": float, "minNotional": float, "icebergParts": int, "maxNumOrders": int})
+
+    return frame
+
+
 # Plots the resting limit book orders currently active for a specified depth. Returns plt plot/image with bars of volume
-def plot_book(book, ticker, limit=500, plot=True, save=True, path=''):
+def plot_book(book, ticker, limit=100, plot=True, save=True, path=''):
 
     book, timestamp = book[0], book[1]
     best_ask, best_bid = book.iloc[int(limit/2)-1], book.iloc[int(limit/2)]
@@ -42,9 +80,9 @@ def plot_book(book, ticker, limit=500, plot=True, save=True, path=''):
         plt.bar(book['quote'], book['ask_vol'], color='red', label='Ask')
         plt.bar(book['quote'], book['bid_vol'], color='green', label='Bid')
         plt.axvline(midpoint, color='black', linewidth=1, linestyle='--', label='Mid')
-        plt.ylabel('Volume (# BTC in LOB)')
+        plt.ylabel('Volume (# Units in LOB)')
         plt.xlabel('Quote ($)')
-        plt.title('Top of LOB in {}'.format(ticker))
+        plt.title('Limit Order Book in {}'.format(ticker))
         plt.legend()
         plt.show()
         if save:

@@ -1,4 +1,4 @@
-import CTrader
+import CSuite
 
 
 def sweep(pair, size):
@@ -8,11 +8,11 @@ def sweep(pair, size):
     else:
         side = 'BUY'
     # Step 1: Connect with Binance Client for data
-    client = CTrader.connector.connect_client('file.json')
+    client = CSuite.CSuite.BConnector.connector.connect_client('file.json')
     # Step 2: Download Limit Order Book
-    book = CTrader.orderbook.view_book(pair, client)
+    book = CSuite.CSuite.CTrader.orderBook.view_book(pair, client)
     # Step 3: Calculate Expected Sweep Cost on a specified order of size with reference price being the Ask
-    frame = CTrader.orderbook.sweep_cost(book[0], abs(size), pair, side, ref='A')
+    frame = CSuite.CSuite.CTrader.orderBook.sweep_cost(book[0], abs(size), pair, side, ref='A')
 
     return frame
 

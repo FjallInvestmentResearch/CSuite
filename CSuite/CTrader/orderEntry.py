@@ -1,7 +1,6 @@
 # ORDER MANAGEMENT SYSTEM
 # Order object
 from binance.enums import *
-from CSuite.CSuite.CTrader import orderBook
 
 
 class LimitOrder:
@@ -82,6 +81,11 @@ class LimitOrder:
         else:
             return False
 
+    def test(self):
+        if self.stop == 0:
+            self.stop = None
+        return self.client.create_test_order(symbol=self.symbol, side=self.side, type=self.type, quantity=abs(self.size), price=str(self.price), timeInForce=self.timeInForce, stopPrice=self.stop)
+
     def submit(self):
         if self.stop == 0:
             self.stop = None
@@ -148,11 +152,17 @@ class MarketOrder:
         else:
             return False
 
-    def submit(self):
+    def test(self):
         if self.stop == 0:
             self.stop = None
 
         return self.client.create_test_order(symbol=self.symbol, side=self.side, type=self.type, quantity=abs(self.size), stopPrice=self.stop)
+
+    def submit(self):
+        if self.stop == 0:
+            self.stop = None
+
+        return self.client.create_order(symbol=self.symbol, side=self.side, type=self.type, quantity=abs(self.size), stopPrice=self.stop)
 
 
 class PostOrder:
@@ -226,6 +236,9 @@ class PostOrder:
             return True
         else:
             return False
+
+    def test(self):
+        return self.client.create_test_order(symbol=self.symbol, side=self.side, type=self.type, quantity=abs(self.size), price=str(self.price), timeInForce=None)
 
     def submit(self):
         return self.client.create_order(symbol=self.symbol, side=self.side, type=self.type, quantity=abs(self.size), price=str(self.price), timeInForce=None)

@@ -45,3 +45,35 @@ def tick_match(client, ticker, size, tickSize, distance=5, retry=10, refresh=2):
 
     print('Execution Done!')
     return ids
+
+
+# Mid-Point Match Execution Algorithm
+def midpoint_match(client, ticker, size, tickSize, retry=10):
+    record = []
+    for i in range(0, retry):
+        # get the Limit Order Book and thus Best-Bid & Best-Ask
+        book = ct.orderBook.get_quote(client, ticker)
+        # Strike as Best-Bid + Spread/2
+        best_bid, best_ask = float(book[1][0]), float(book[0][0])
+        midpoint = round(best_bid + ((best_ask-best_bid)/2), 4)
+        if midpoint >= best_ask:
+            midpoint = midpoint - tickSize
+        # Submit IOC Limit Order at the Strike without verification for added speed
+        order = ct.LimitOrder(client, str(midpoint), size, ticker, 0, 'IOC').submit()
+        # Monitor output
+        print('Strike: '+str(midpoint)+' - Best Bid: ' + str(book[0][0]) + ' Best Ask: '+str(book[1][0]))
+        # If order active then save orderId and Book used for record
+        if type(order) != bool and len(order) > 0:
+            orderId = order['orderId']
+            record.append([orderId, book])
+            # Stop sending orders if any is filled
+            if order['status'] == 'FILLED':
+                print('Order Filled!')
+                return record
+            else:
+                pass
+        else:
+            print(order)
+            print('Order not Routed!')
+            return False
+        return record

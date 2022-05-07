@@ -4,6 +4,7 @@ from binance.enums import *
 import CSuite.CSuite.CTrader as C
 
 
+# Limit Order is utilised to ensure exact execution price
 class LimitOrder:
     price, size = 0, 0
     symbol = ''
@@ -40,6 +41,7 @@ class LimitOrder:
         self.price, self.size, self.symbol = float(price), size, symbol
         self.client = client
 
+    # Verifies the order against pre-set filters internally (supports custom logic)
     def verify(self, ledger):
 
         def verify_price():
@@ -75,6 +77,7 @@ class LimitOrder:
         else:
             return False
 
+    # Runs verification and submits
     def verified_submit(self, ledger):
         if self.verify(ledger):
             self.submit()
@@ -82,17 +85,20 @@ class LimitOrder:
         else:
             return False
 
+    # Submits TEST order to the exchange which can pass baseline parameters faster than verify()
     def test(self):
         if self.stop == 0:
             self.stop = None
         return self.client.create_test_order(symbol=self.symbol, side=self.side, type=self.type, quantity=abs(self.size), price=str(self.price), timeInForce=self.timeInForce, stopPrice=self.stop)
 
+    # Submits the order to the exchange
     def submit(self):
         if self.stop == 0:
             self.stop = None
         return self.client.create_order(symbol=self.symbol, side=self.side, type=self.type, quantity=abs(self.size), price=str(self.price), timeInForce=self.timeInForce, stopPrice=self.stop)
 
 
+# Market Orders enable access to immediate liquidity
 class MarketOrder:
     size = 0
     symbol = ''
@@ -166,6 +172,7 @@ class MarketOrder:
         return self.client.create_order(symbol=self.symbol, side=self.side, type=self.type, quantity=abs(self.size), stopPrice=self.stop)
 
 
+# Post Orders are aimed at market makers looking to cross with market contra
 class PostOrder:
     price, size = 0, 0
     symbol = ''
@@ -245,6 +252,8 @@ class PostOrder:
         return self.client.create_order(symbol=self.symbol, side=self.side, type=self.type, quantity=abs(self.size), price=str(self.price), timeInForce=None)
 
 
+# The OrderEngine is a module used to handle frequent execution in a certain pair,
+# it acts as a wrapper for environment variables (tickSize) and API objects (Client).
 class OrderEngine:
     client, ticker = None, ''
     ledger = None
@@ -255,6 +264,7 @@ class OrderEngine:
         self.ledger = ledger
         return
 
+    # Builds a simple order of type 'LMT' or 'MKT'
     def order(self, type, size, price=0, stop=0, timeInForce='GTC'):
 
         if type == 'LMT' and price != 0:
@@ -264,18 +274,22 @@ class OrderEngine:
         else:
             return False
 
+        # Sends the Order to the exchange
         def send():
             return tmp_order.submit()
 
+        # Sends a test order to the exchange
         def test():
             return tmp_order.test()
 
         return tmp_order
 
+    # Runs the Tick-Match Algorithm, need pass only size and preferably distance
     def tick_match(self, size, distance=5, retry=10, refresh=2):
         return C.tick_match(self.client, self.ticker, float(size),
                             float(self.ledger.loc[self.ticker]['tickSize']), distance, retry, refresh)
 
+    # Runs the Mid-Point Match Algorithm which requires only size input
     def midpoint_match(self, size, retry=10):
         return C.midpoint_match(self.client, self.ticker, float(size),
                                 float(self.ledger.loc[self.ticker]['tickSize']), retry=retry)

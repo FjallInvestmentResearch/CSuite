@@ -1,57 +1,8 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import CSuite.CSuite as C
 
 # Orderbook Functions
-
-
-# Calls order book with specified depth (limit) on a pair (symbol). Returns ladder like dataframe
-def view_book(symbol, client, limit=100):
-    # call order book JSON read
-    order_snap = client.get_order_book(symbol=symbol, limit=limit)
-
-    # Parse JSON structure
-    bid_prices, bid_vol = [], []
-    ask_prices, ask_vol = [], []
-    for k in range(0, limit):
-        bid_prices.append(float(order_snap['bids'][k][0]))
-        bid_vol.append(float(order_snap['bids'][k][1]))
-        ask_prices.append(float(order_snap['asks'][k][0]))
-        ask_vol.append(float(order_snap['asks'][k][1]))
-
-    # format ladder
-    bid_vol = ([0.0 for i in range(0, limit)] + bid_vol)
-    price = ask_prices[::-1] + bid_prices
-    ask_vol = (ask_vol + [0.0 for i in range(0, limit)])
-    # create & return pandas DF object
-    frame = pd.DataFrame(data=list(zip(bid_vol, price, ask_vol)), columns=['bid_vol', 'quote', 'ask_vol'],
-                         index=range(0, limit*2))
-
-    return frame, order_snap['lastUpdateId']
-
-
-# Returns the best bid and ask with resting limit volume, designed for fast access.
-def get_quote(client, ticker):
-    order_snap = client.get_order_book(symbol=ticker, limit=5)
-    best_ask, best_bid = order_snap['asks'][0], order_snap['bids'][0]
-    return [best_ask, best_bid]
-
-
-# Gets static info on exchange parameters for specified symbol.
-def get_symbol_info(client, ticker):
-    info = client.get_symbol_info(ticker)
-    datums = []
-    tags = ['symbol', 'status', 'icebergAllowed', 'ocoAllowed', 'allowTrailingStop', 'tickSize', 'up',
-            'down', 'minQty', 'maxQty', 'stepSize', 'minNotional', 'icebergParts', 'maxNumOrders']
-    filters = [['PRICE_FILTER', ['tickSize']], ['PERCENT_PRICE', ['multiplierUp','multiplierDown']],
-               ['LOT_SIZE', ['minQty', 'maxQty', 'stepSize']], ['MIN_NOTIONAL',['minNotional']], ['ICEBERG_PARTS', ['limit']], ['MAX_NUM_ORDERS', ['maxNumOrders']]]
-    for k in range(0, 5):
-        datums.append(info[tags[k]])
-    for i in range(0, 5):
-        for key in filters[i][1]:
-            datums.append(info['filters'][i][key])
-    datums.append(info['filters'][7]['maxNumOrders'])
-
-    return datums
 
 
 # Builds the trading parameter ledger for an array of symbols.
@@ -60,7 +11,7 @@ def build_ledger(client, tickers):
                                   'down', 'minQty', 'maxQty', 'stepSize', 'minNotional', 'icebergParts', 'maxNumOrders'])
     for ticker in tickers:
         length = len(frame)
-        frame.loc[length] = (get_symbol_info(client, ticker))
+        frame.loc[length] = (C.get_symbol_info(client, ticker))
 
     frame = frame.astype({"icebergAllowed": bool, "ocoAllowed": bool, "allowTrailingStop": bool, "tickSize": float, "up": float, "down": float, "minQty": float, "maxQty": float, "stepSize": float, "minNotional": float, "icebergParts": int, "maxNumOrders": int})
     frame = frame.set_index('symbol')
@@ -173,7 +124,7 @@ def monitor_book(symbol, client, limit):
     # Data fetching loop
     while run is True:
         # retrieve book
-        book = view_book(symbol, client)
+        book = C.view_book(symbol, client)
         frame = book[0]
         # retrieve timestamp
         timestamp.append(book[1])
@@ -182,7 +133,8 @@ def monitor_book(symbol, client, limit):
         # Spread
         spread.append(best_bid['quote'] - best_ask['quote'])
         # Mid-point
-        mid_point.append((best_bid['bid_vol']*best_ask['quote'] + best_ask['ask_vol']*best_bid['quote'])/(best_ask['ask_vol']+best_bid['bid_vol']))
+        mid_point.append((best_bid['bid_vol']*best_ask['quote'] + best_ask['ask_vol']*best_bid['quote'])/
+                         (best_ask['ask_vol']+best_bid['bid_vol']))
         # Book Balance
         book_balance.append(sum(frame['bid_vol']*frame['quote'])/sum(frame['ask_vol']*frame['quote']))
         # Weighted Mean by Side
@@ -195,6 +147,8 @@ def monitor_book(symbol, client, limit):
         if count > limit:
             run = False
 
-    df = pd.DataFrame(data=list(zip(timestamp, mid_point, spread, book_balance, bid_mean, ask_mean, bba)), columns=['timestamp', 'mid_point', 'spread', 'book_balance', 'bid_mean', 'ask_mean', 'best_bid'], index=range(0,limit+1))
+    df = pd.DataFrame(data=list(zip(timestamp, mid_point, spread, book_balance, bid_mean, ask_mean, bba)),
+                      columns=['timestamp', 'mid_point', 'spread', 'book_balance', 'bid_mean', 'ask_mean', 'best_bid'],
+                      index=range(0, limit+1))
 
     return df

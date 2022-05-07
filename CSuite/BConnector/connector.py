@@ -103,6 +103,7 @@ def get_LiveSpread(client, symbol):
     mp = float(client.futures_mark_price(symbol=symbol)['markPrice'])
     return ((mp - float(client.get_avg_price(symbol=symbol)['price']))/mp)*100
 
+
 def get_FuturesLS(client, symbol, period):
     frame = pd.DataFrame()
     lsp = client.futures_top_longshort_position_ratio(symbol=symbol,period=period)
@@ -169,6 +170,7 @@ def get_omm_skew(client, maturities, strikes):
         count = count + 1
     return data_array
 
+
 def IV_skew(data, price):
     IV_array = []
     for i in range(0,3):
@@ -186,3 +188,55 @@ def IV_skew(data, price):
         vol_skew = vol_skew.set_index(op_data[op_data['direction']=='C'].strike)
         IV_array.append(vol_skew)
         return IV_array
+
+# OrderBook Functions
+
+# Calls order book with specified depth (limit) on a pair (symbol). Returns ladder like dataframe
+def view_book(symbol, client, limit=100):
+    # call order book JSON read
+    order_snap = client.get_order_book(symbol=symbol, limit=limit)
+
+    # Parse JSON structure
+    bid_prices, bid_vol = [], []
+    ask_prices, ask_vol = [], []
+    for k in range(0, limit):
+        bid_prices.append(float(order_snap['bids'][k][0]))
+        bid_vol.append(float(order_snap['bids'][k][1]))
+        ask_prices.append(float(order_snap['asks'][k][0]))
+        ask_vol.append(float(order_snap['asks'][k][1]))
+
+    # format ladder
+    bid_vol = ([0.0 for i in range(0, limit)] + bid_vol)
+    price = ask_prices[::-1] + bid_prices
+    ask_vol = (ask_vol + [0.0 for i in range(0, limit)])
+    # create & return pandas DF object
+    frame = pd.DataFrame(data=list(zip(bid_vol, price, ask_vol)), columns=['bid_vol', 'quote', 'ask_vol'],
+                         index=range(0, limit*2))
+
+    return frame, order_snap['lastUpdateId']
+
+
+# Returns the best bid and ask with resting limit volume, designed for fast access.
+def get_quote(client, ticker):
+    order_snap = client.get_order_book(symbol=ticker, limit=5)
+    best_ask, best_bid = order_snap['asks'][0], order_snap['bids'][0]
+    return [best_ask, best_bid]
+
+
+# Gets static info on exchange parameters for specified symbol.
+def get_symbol_info(client, ticker):
+    info = client.get_symbol_info(ticker)
+    datums = []
+    tags = ['symbol', 'status', 'icebergAllowed', 'ocoAllowed', 'allowTrailingStop', 'tickSize', 'up',
+            'down', 'minQty', 'maxQty', 'stepSize', 'minNotional', 'icebergParts', 'maxNumOrders']
+    filters = [['PRICE_FILTER', ['tickSize']], ['PERCENT_PRICE', ['multiplierUp','multiplierDown']],
+               ['LOT_SIZE', ['minQty', 'maxQty', 'stepSize']], ['MIN_NOTIONAL', ['minNotional']],
+               ['ICEBERG_PARTS', ['limit']], ['MAX_NUM_ORDERS', ['maxNumOrders']]]
+    for k in range(0, 5):
+        datums.append(info[tags[k]])
+    for i in range(0, 5):
+        for key in filters[i][1]:
+            datums.append(info['filters'][i][key])
+    datums.append(info['filters'][7]['maxNumOrders'])
+
+    return datums

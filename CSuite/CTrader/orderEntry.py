@@ -1,10 +1,11 @@
 # ORDER MANAGEMENT SYSTEM
 # Order object
 from binance.enums import *
+import CSuite.CSuite.CTrader as C
 
 
 class LimitOrder:
-    price, size= 0, 0
+    price, size = 0, 0
     symbol = ''
     stop, timeInForce = 0.0, 'GTC'
     params, client = None, None
@@ -39,7 +40,7 @@ class LimitOrder:
         self.price, self.size, self.symbol = float(price), size, symbol
         self.client = client
 
-    def verify_trade(self, ledger):
+    def verify(self, ledger):
 
         def verify_price():
             ref_price = float(self.client.get_avg_price(symbol=self.symbol)['price'])
@@ -75,7 +76,7 @@ class LimitOrder:
             return False
 
     def verified_submit(self, ledger):
-        if self.verify_trade(ledger):
+        if self.verify(ledger):
             self.submit()
             return True
         else:
@@ -121,7 +122,7 @@ class MarketOrder:
         elif stop < self.price:
             self.type = ORDER_TYPE_STOP_LOSS
 
-    def verify_trade(self, ledger):
+    def verify(self, ledger):
 
         def verify_notional():
             if self.price * abs(self.size) > self.params['minNotional']:
@@ -146,7 +147,7 @@ class MarketOrder:
             return False
 
     def verified_submit(self, ledger):
-        if self.verify_trade(ledger):
+        if self.verify(ledger):
             self.submit()
             return True
         else:
@@ -166,7 +167,7 @@ class MarketOrder:
 
 
 class PostOrder:
-    price, size= 0, 0
+    price, size = 0, 0
     symbol = ''
     timeInForce = 'GTC'
     params, client = None, None
@@ -195,7 +196,7 @@ class PostOrder:
         self.price, self.size, self.symbol = float(price), size, symbol
         self.client = client
 
-    def verify_trade(self, ledger):
+    def verify(self, ledger):
 
         def verify_price():
             ref_price = float(self.client.get_avg_price(symbol=self.symbol)['price'])
@@ -231,7 +232,7 @@ class PostOrder:
             return False
 
     def verified_submit(self, ledger):
-        if self.verify_trade(ledger):
+        if self.verify(ledger):
             self.submit()
             return True
         else:
@@ -243,4 +244,39 @@ class PostOrder:
     def submit(self):
         return self.client.create_order(symbol=self.symbol, side=self.side, type=self.type, quantity=abs(self.size), price=str(self.price), timeInForce=None)
 
+
+class OrderEngine:
+    client, ticker = None, ''
+    ledger = None
+
+    def __init__(self, client, ticker, ledger):
+        self.client = client
+        self.ticker = ticker
+        self.ledger = ledger
+        return
+
+    def order(self, type, size, price=0, stop=0, timeInForce='GTC'):
+
+        if type == 'LMT' and price != 0:
+            tmp_order = LimitOrder(self.client, price, size, self.ticker, stop, timeInForce)
+        elif type == 'MKT':
+            tmp_order = MarketOrder(self.client, size, self.ticker, stop)
+        else:
+            return False
+
+        def send():
+            return tmp_order.submit()
+
+        def test():
+            return tmp_order.test()
+
+        return tmp_order
+
+    def tick_match(self, size, distance=5, retry=10, refresh=2):
+        return C.tick_match(self.client, self.ticker, float(size),
+                            float(self.ledger.loc[self.ticker]['tickSize']), distance, retry, refresh)
+
+    def midpoint_match(self, size, retry=10):
+        return C.midpoint_match(self.client, self.ticker, float(size),
+                                float(self.ledger.loc[self.ticker]['tickSize']), retry=retry)
 

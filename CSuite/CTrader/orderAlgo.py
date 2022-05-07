@@ -56,8 +56,11 @@ def midpoint_match(client, ticker, size, tickSize, retry=10):
         # Strike as Best-Bid + Spread/2
         best_bid, best_ask = float(book[1][0]), float(book[0][0])
         midpoint = round(best_bid + ((best_ask-best_bid)/2), 4)
-        if midpoint >= best_ask:
-            midpoint = midpoint - tickSize
+        if best_ask - best_bid == tickSize:
+            if size < 0:
+                midpoint = midpoint + tickSize
+            else:
+                midpoint = midpoint - tickSize
         # Submit IOC Limit Order at the Strike without verification for added speed
         order = ct.LimitOrder(client, str(midpoint), size, ticker, 0, 'IOC').submit()
         # Monitor output

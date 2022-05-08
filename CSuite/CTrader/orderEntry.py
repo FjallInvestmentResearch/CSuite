@@ -6,14 +6,13 @@ import CSuite.CSuite.CTrader as C
 
 # Limit Order is utilised to ensure exact execution price
 class LimitOrder:
-    price, size = 0, 0
-    symbol = ''
-    stop, timeInForce = 0.0, 'GTC'
-    params, client = None, None
 
-    # API parameters
-    side = None
-    type = None
+    client, params = None, None
+    symbol, timeInForce = '', 'GTC'
+    price, size = 0.0, 0.0
+    stop, orderId = 0.0, ''
+    side, type = None, None
+    status = ''
 
     def __init__(self, client, price, size, symbol, stop, timeInForce):
 
@@ -95,19 +94,27 @@ class LimitOrder:
     def submit(self):
         if self.stop == 0:
             self.stop = None
-        return self.client.create_order(symbol=self.symbol, side=self.side, type=self.type, quantity=abs(self.size), price=str(self.price), timeInForce=self.timeInForce, stopPrice=self.stop)
+        order = self.client.create_order(symbol=self.symbol, side=self.side, type=self.type, quantity=abs(self.size), price=str(self.price), timeInForce=self.timeInForce, stopPrice=self.stop)
+        self.orderId = order['orderId']
+        self.status = order['status']
+        return self
+
+    # Cancels the order if it exists
+    def cancel(self):
+        if self.status != '':
+            self.status = self.client.cancel_order(symbol=self.symbol, orderId=self.orderId)['status']
+            return self.status
 
 
 # Market Orders enable access to immediate liquidity
 class MarketOrder:
-    size = 0
-    symbol = ''
-    stop = 0.0
-    params, client = None, None
 
-    # API parameters
-    side = None
-    type = None
+    client, params = None, None
+    symbol = ''
+    size = 0.0
+    stop, orderId = 0.0, ''
+    side, type = None, None
+    status = ''
 
     def __init__(self, client, size, symbol, stop=0):
 
@@ -169,7 +176,15 @@ class MarketOrder:
         if self.stop == 0:
             self.stop = None
 
-        return self.client.create_order(symbol=self.symbol, side=self.side, type=self.type, quantity=abs(self.size), stopPrice=self.stop)
+        order = self.client.create_order(symbol=self.symbol, side=self.side, type=self.type, quantity=abs(self.size), stopPrice=self.stop)
+        self.orderId = order['orderId']
+        self.status = order['status']
+        return self
+
+    def cancel(self):
+        if self.status != '':
+            self.status = self.client.cancel_order(symbol=self.symbol, orderId=self.orderId)['status']
+            return self.status
 
 
 # Post Orders are aimed at market makers looking to cross with market contra
@@ -178,8 +193,7 @@ class PostOrder:
     symbol = ''
     timeInForce = 'GTC'
     params, client = None, None
-
-    # API parameters
+    status, orderId = '', ''
     side = None
     type = None
 
@@ -249,7 +263,15 @@ class PostOrder:
         return self.client.create_test_order(symbol=self.symbol, side=self.side, type=self.type, quantity=abs(self.size), price=str(self.price), timeInForce=None)
 
     def submit(self):
-        return self.client.create_order(symbol=self.symbol, side=self.side, type=self.type, quantity=abs(self.size), price=str(self.price), timeInForce=None)
+        order = self.client.create_order(symbol=self.symbol, side=self.side, type=self.type, quantity=abs(self.size), price=str(self.price), timeInForce=None)
+        self.orderId = order['orderId']
+        self.status = order['status']
+        return self
+
+    def cancel(self):
+        if self.status != '':
+            self.status = self.client.cancel_order(symbol=self.symbol, orderId=self.orderId)['status']
+            return self.status
 
 
 # The OrderEngine is a module used to handle frequent execution in a certain pair,
@@ -257,6 +279,7 @@ class PostOrder:
 class OrderEngine:
     client, ticker = None, ''
     ledger = None
+    orderId = ''
 
     def __init__(self, client, ticker, ledger):
         self.client = client
@@ -269,8 +292,12 @@ class OrderEngine:
 
         if type == 'LMT' and price != 0:
             tmp_order = LimitOrder(self.client, price, size, self.ticker, stop, timeInForce)
+            self.orderId = tmp_order['orderId']
+            return tmp_order
         elif type == 'MKT':
             tmp_order = MarketOrder(self.client, size, self.ticker, stop)
+            self.orderId = tmp_order['orderId']
+            return tmp_order
         else:
             return False
 
@@ -293,4 +320,3 @@ class OrderEngine:
     def midpoint_match(self, size, retry=10):
         return C.midpoint_match(self.client, self.ticker, float(size),
                                 float(self.ledger.loc[self.ticker]['tickSize']), retry=retry)
-

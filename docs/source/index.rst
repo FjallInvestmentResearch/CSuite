@@ -10,6 +10,6 @@ This is an unofficial interfacing framework for crypto trading on Binance using 
 Contents
 --------
 
-.. toctree::
+    .. toctree::
 
-   Getting Started
+       Getting Started

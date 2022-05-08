@@ -70,8 +70,8 @@ class MonteCarlo:
 
     np.random.seed(777)
     symbols = []
-    datums = []
     client = None
+    frame = pd.DataFrame()
 
     def __init__(self, client, symbols):
         self.symbols = symbols
@@ -79,13 +79,17 @@ class MonteCarlo:
 
     def run(self, runs=5000):
         import_data = Portfolio(self.client, self.symbols, None, '1d', True).get_data()
+        datums = []
         for i in range(1, runs):
             weights = np.random.random(len(self.symbols))
             weights /= np.sum(weights)
-            self.datums.append(list(Portfolio(self.client, self.symbols, weights, '1d', False)
+            datums.append(list(Portfolio(self.client, self.symbols, weights, '1d', False)
                                     .load_data(import_data).summarize().values[0]))
         frame = pd.DataFrame(columns=['Weights', 'ExpectedReturns', 'ExpectedVol', 'ExpectedSharpe',
                                       'Sortino', 'MaxDrawDown', 'Calmar', 'PerformedReturn', 'PerformedVol',
-                                      'PerformedSharpe'], data=self.datums)
+                                      'PerformedSharpe'], data=datums)
+        self.frame = frame
+        return self
 
-        return frame
+    def eft(self):
+        return self.frame.sort_values(by='ExpectedSharpe', ascending=False).head(5)

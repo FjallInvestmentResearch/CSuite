@@ -106,7 +106,7 @@ def get_LiveSpread(client, symbol):
 
 def get_FuturesLS(client, symbol, period):
     frame = pd.DataFrame()
-    lsp = client.futures_top_longshort_position_ratio(symbol=symbol,period=period)
+    lsp = client.futures_top_longshort_position_ratio(symbol=symbol, period=period)
     la, sa, lsr, ts = [], [], [], []
     for entry in lsp:
         la.append(entry['longAccount'])
@@ -191,8 +191,9 @@ def IV_skew(data, price):
 
 # OrderBook Functions
 
+
 # Calls order book with specified depth (limit) on a pair (symbol). Returns ladder like dataframe
-def view_book(symbol, client, limit=100):
+def view_book(client, symbol, limit=100):
     # call order book JSON read
     order_snap = client.get_order_book(symbol=symbol, limit=limit)
 

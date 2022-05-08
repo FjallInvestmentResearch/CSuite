@@ -13,7 +13,7 @@
 ## BConnector Functions
 
 #### connect_client(filename)
-The connect client function takes a formated JSON file as input and returns a Binance client object. This returned object is necessary input in most following functions.
+The connect client function takes a formatted JSON file as input and returns a Binance client object. This returned object is necessary input in most following functions.
 
 ### Spot
 #### get_SpotKlines(client,symbol,interval)

@@ -73,8 +73,6 @@ def midpoint_match(client, ticker, size, tickSize, retry=10):
             if order['status'] == 'FILLED':
                 print('Order Filled!')
                 return record
-            else:
-                pass
         else:
             print(order)
             print('Order not Routed!')

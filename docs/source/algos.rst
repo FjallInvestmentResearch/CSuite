@@ -24,9 +24,37 @@ Submitting the Order
 
 Limit Order
 ************
-Limit Orders provide guaranteed price at execution, at the Limit Price or better, however the execution is not immediate.
+A limit order is a type of order to purchase or sell a security at a specified price or better. 
+By using a buy limit order, the investor is guaranteed to pay that price or less. While the price is guaranteed, 
+the filling of the order is not, and limit orders will not be executed unless the security price meets the 
+order qualifications. If the asset does not reach the specified price, the order is not filled.
 
-:code:`order = CSuite.LimitOrder(client, 300.0, 1, 'BNBUSDT', 'GTC')`
++------------+------------+-----------+
+| Name       | Type       | Example   |
++------------+------------+-----------+
+| Price      | Float      | 0.5002    |
++------------+------------+-----------+
+| Size (Qty) | Float      | 15 or -50 |
++------------+------------+-----------+
+| Symbol     | String     | 'BTCUSDT' |
++------------+------------+-----------+
+| timeInForce| String     |'GTC' 'FOK'|
++------------+------------+-----------+
+
+**Building an Order:** :code:`order = CSuite.LimitOrder(client, 300.0, 1, 'BNBUSDT', 'GTC')`
+
+Submit
+^^^^^^
+To submit a built order to the Binance Exchange the submit method of the Limit Order can be used. As so: :code:`order.submit()`
+
+Test
+^^^^^
+To test a built order by submitting an identical test order this :code:`test` method may be used. This is useful if order parameters must be verified fast
+as the call and response takes a mere 200ms. This is possible as such: :code:`order.test()`.
+
+Cancel
+^^^^^^
+To cancel a submitted order (one that has recived a valid :code:`orderId` variable) the cancel method can be used: :code:`order.cancel()`.
 
 Market Order
 ************

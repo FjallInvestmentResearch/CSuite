@@ -35,6 +35,10 @@ It also supports multiple modes through the mode parameter, the following is sup
 
 :code:`frame = CSuite.get_batch_historic(client, ['BTCUSDT', 'ADAUSDT'], '1d', 'N')`
 
+Get Quote & Limit Order Book
+----------------------------
+
+
 Get Futures Data
 -----------------
 Alongside Spot functionality, the library supports retrival and operation in the Binance Futures Market. It is possible to access futures Timeseries data through
@@ -71,3 +75,13 @@ Get Option Skew
 *****************
 
 :code:`skew = get_options_skew(client, maturity, strikes)`
+
+Get Multiple Issue Skew
+************************
+
+:code:`data = get_omm_skew(client, [''], [''])`
+
+Options Vol Smirk
+*******************
+
+:code:`iv = IV_skew(data, price)`

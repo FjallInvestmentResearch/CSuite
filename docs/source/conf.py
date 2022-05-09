@@ -5,8 +5,8 @@ project = 'CSuite'
 copyright = '2022, Fivos Raissis'
 author = 'Fivos Raissis'
 
-release = '0.1.1'
-version = '0.1.0'
+release = '0.1'
+version = '0.1.1'
 
 # -- General configuration
 

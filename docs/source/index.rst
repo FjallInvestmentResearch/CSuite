@@ -1,7 +1,7 @@
 Welcome to CSuite
 ===================================
 
-This is an unofficial interfacing framework for crypto trading on Binance using the Binance API
+This is an unofficial interfacing framework for crypto trading on Binance using the Binance API and providing additional proprietary functionality aimed at algorithmic trading.
 
 .. note::
 
@@ -13,3 +13,4 @@ Contents
     .. toctree::
 
        start
+       bconnector

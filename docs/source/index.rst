@@ -15,3 +15,4 @@ Contents
 
        start
        bconnector
+       algos

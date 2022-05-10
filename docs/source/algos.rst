@@ -50,7 +50,7 @@ The :code:`timeInForce` variable specifies the order enforcment and defualts to 
 +------------+------------+-----------+
 
 
-::code:`order = CSuite.LimitOrder(client, 300.0, 1, 'BNBUSDT', 'GTC')`
+:code:`order = CSuite.LimitOrder(client, 300.0, 1, 'BNBUSDT', 'GTC')`
 
 Submit
 ^^^^^^

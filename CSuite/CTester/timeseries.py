@@ -8,6 +8,7 @@ class TimeSeries:
     data = None
     client = None
     col = 'close'
+    symbol = None
 
     def __init__(self, client, data=None):
         self.client = client
@@ -15,6 +16,7 @@ class TimeSeries:
 
     # populates object 'data' field with OCHL retrieval from connector
     def download(self, symbol, interval):
+        self.symbol = symbol
         self.data = connector.get_SpotKlines(self.client, symbol, interval)
         return self
 

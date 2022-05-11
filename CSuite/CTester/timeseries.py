@@ -62,3 +62,8 @@ class TimeSeries:
         annualized_slope = ((np.power(np.exp(slope), 365) - 1) * 100) * (r_value ** 2)
 
         return round(annualized_slope, 3)
+
+    # returns autocorrelation series for lags
+    def autocorrelation(self, period=365, lags=50):
+        from statsmodels.tsa.stattools import acf
+        return acf(self.data[self.col][-period:], nlags=lags)

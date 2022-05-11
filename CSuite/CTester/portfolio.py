@@ -16,7 +16,7 @@ class Portfolio:
         if download:
             self.data = connector.batch_historic(client, symbols, interval, 'N')
 
-    def get_timeseries(self, period=256):
+    def get_timeseries(self, period=365):
         sub_frame = self.data[-period:].pct_change()
         cols = self.data.columns
         tmp = self.data[cols[0]]*self.weights[0]
@@ -38,8 +38,8 @@ class Portfolio:
         cov_matrix = returns.cov()
         frame = pd.DataFrame()
 
-        returns = np.sum(mean_returns*self.weights) * 252
-        std = np.sqrt(np.dot(np.array(self.weights).T, np.dot(cov_matrix, self.weights))) * np.sqrt(252)
+        returns = np.sum(mean_returns*self.weights) * 365
+        std = np.sqrt(np.dot(np.array(self.weights).T, np.dot(cov_matrix, self.weights))) * np.sqrt(365)
         sharpe_ratio = round((returns-self.risk_free_rate)/std, 4)
         frame['Weights'] = [self.weights]
         frame['ExpectedReturns'] = [round(returns, 4)]
@@ -48,16 +48,16 @@ class Portfolio:
 
         timeseries = self.get_timeseries(len(self.data)-1)
         downside = timeseries[timeseries.values < 0]
-        sortino = ((timeseries.mean()) * 252 - 0.01)/(downside.std()*np.sqrt(252))
-        daily_draw_down = (timeseries/timeseries.rolling(center=False, min_periods=1, window=252).max())-1.0
-        max_daily_draw_down = daily_draw_down.rolling(center=False, min_periods=1, window=252).min().min().round(4)
-        calmar = round((timeseries.mean()*252)/abs(max_daily_draw_down.min())*100, 4)
+        sortino = ((timeseries.mean()) * 365 - 0.01)/(downside.std()*np.sqrt(365))
+        daily_draw_down = (timeseries/timeseries.rolling(center=False, min_periods=1, window=365).max())-1.0
+        max_daily_draw_down = daily_draw_down.rolling(center=False, min_periods=1, window=365).min().min().round(4)
+        calmar = round((timeseries.mean()*365)/abs(max_daily_draw_down.min())*100, 4)
         frame['Sortino'] = [sortino.round(4)]
         frame['MaxDrawDown'] = [max_daily_draw_down]
         frame['Calmar'] = [calmar]
 
-        returnp = round(timeseries[-252:].sum(), 4)
-        stdp = round(timeseries[-252:].std()*np.sqrt(252), 4)
+        returnp = round(timeseries[-365:].sum(), 4)
+        stdp = round(timeseries[-365:].std()*np.sqrt(365), 4)
         sharpep = round(returnp/stdp, 4)
         frame['PerformedReturn'] = returnp
         frame['PerformedVol'] = stdp

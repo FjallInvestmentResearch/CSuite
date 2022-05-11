@@ -64,6 +64,19 @@ class TimeSeries:
         return round(annualized_slope, 3)
 
     # returns autocorrelation series for lags
-    def autocorrelation(self, period=365, lags=50):
+    def autocorrelation(self, period=365, lags=50, diff=False):
         from statsmodels.tsa.stattools import acf
-        return acf(self.data[self.col][-period:], nlags=lags)
+        if diff:
+            return acf(self.data[self.col][-period:].diff().dropna(), nlags=lags)
+        else:
+            return acf(self.data[self.col][-period:], nlags=lags)
+
+    # AD-Fuller test result dataframe
+    def adfuller(self):
+        from statsmodels.tsa.stattools import adfuller
+        adf = adfuller(self.data['close'])
+        df = pd.DataFrame(columns=['adf', 'p-value', 'lags', 'NObs', 'cv_1%', 'cv_5%', 'cv_10%', 'ic'])
+        ks = list(adf[0:4]) + list(adf[4].values()) + [adf[5]]
+        df.loc[0] = ks
+
+        return df

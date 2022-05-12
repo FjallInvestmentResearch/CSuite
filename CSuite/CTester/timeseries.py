@@ -74,9 +74,12 @@ class TimeSeries:
             return acf(self.data[self.col][-period:], nlags=lags)
 
     # AD-Fuller test result dataframe
-    def adfuller(self):
+    def adfuller(self, maxlag=5, mode='N', regression='c'):
         from statsmodels.tsa.stattools import adfuller
-        adf = adfuller(self.data['close'])
+        if mode == 'N':
+            adf = adfuller(self.data['close'], maxlag=maxlag, regression=regression)
+        elif mode == 'L':
+            adf = adfuller(np.log(self.data['close']), maxlag=maxlag, regression=regression)
         df = pd.DataFrame(columns=['adf', 'p-value', 'lags', 'NObs', 'cv_1%', 'cv_5%', 'cv_10%', 'ic'])
         ks = list(adf[0:4]) + list(adf[4].values()) + [adf[5]]
         df.loc[0] = ks

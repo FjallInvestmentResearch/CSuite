@@ -6,6 +6,7 @@ Buy Order
 This is a simple recipe to create the code to send a Buy order.
 
 .. code-block::
+
     # Step 1 Connect the client by linking the JSON file
     client = CSuite.connect_client('file.json')
 
@@ -25,6 +26,7 @@ Tick-Match Buy
 This is a simple recipe to setup a order algorithm using the OrderEngine object.
 
 .. code-block::
+
     # Step 1: Connect Binance Client
     client = CSuite.connect_client('global.json')
 

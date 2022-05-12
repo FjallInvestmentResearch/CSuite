@@ -15,6 +15,6 @@ Contents
 
        start
        bconnector
-       algos
        portfolio
+       algos
        rece

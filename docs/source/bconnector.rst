@@ -69,6 +69,11 @@ with the Binance API for high speeds.
 
 Getting Symbol Trade Parameters
 *********************************
+We have also created a simplified way to parse the Exchange information necessary to execute automated trading
+details such as the trading status, tickSize, and minimum notional are included.
+
+.. code::
+    info = get_symbol_info(client, 'BNBUSDT')
 
 Get Futures Data
 -----------------

@@ -9,23 +9,27 @@ The object which enables API calls is the :code:`client` which is derived from a
 The client can be used to connect with the exchange and send, recive data ad-hoc or in real-time and is necessary for most connected functionality such
 as data retrival and order submission. A client can be easily created:
 
-:code:`client = CSuite.connect_client('filename.json')`
+.. code-block::
+
+    client = CSuite.connect_client('filename.json')
 
 To initiate the client one must provide a JSON file with the two API keys for Binance, indexed as 'API KEY' and 'SECRET KEY'.
-Once the client has been called succesfully by providing up-to-date keys, the returned client object must be kept for later use.
+Once the client has been called successfully by providing up-to-date keys, the returned client object must be kept for later use.
 
 Get Spot Timeseries
 --------------------------
 Downloading timeseries (OCHL) data for a specific crypto made extremely easy through the Kline function, which returns a Pandas DataFrame
 with all the data: OCHL & Volume. The client is a required parameter, so is the symbol (Binance pair notation) and the interval which can be from
-'1m' to '4d'. Please note that this function will return the latest 1000 data-points. 
+'1m' to '4d'. Please note that this function will return the latest 1000 data-points.
 
-:code:`BTC = CSuite.get_SpotKlines(client, 'BTCUSDT', '1d')`
+.. code-block::
+
+    BTC = CSuite.get_SpotKlines(client, 'BTCUSDT', '1d')
 
 Get Multiple Spot Timeseries
 *****************************
 Since users often find themselves needing to download multiple timeseries at the same time, we provide the custom :code:`get_batch_historic()` function.
-This function allows the download of parrallel historical timeseries data for multiple crypto. Unlike the :code:`get_SpotKline()` function, this one requires an array of strings in the symbols parameter. 
+This function allows the download of parrallel historical timeseries data for multiple crypto. Unlike the :code:`get_SpotKline()` function, this one requires an array of strings in the symbols parameter.
 It also supports multiple modes through the mode parameter, the following is supported:
 
 * Nominal - Closing Price ('N')
@@ -33,39 +37,76 @@ It also supports multiple modes through the mode parameter, the following is sup
 * Volatility - Rolling 5-day Standard Deviation ('V')
 
 
-:code:`frame = CSuite.get_batch_historic(client, ['BTCUSDT', 'ADAUSDT'], '1d', 'N')`
+.. code-block::
+
+    frame = CSuite.get_batch_historic(client, ['BTCUSDT', 'ADAUSDT'], '1d', 'N')
 
 Get Quote & Limit Order Book
 ----------------------------
 
+Viewing the Orderbook
+**********************
+Retrieving the live limit order book (LOB) is the first step in accessing the real time market on the exchange. Using this limit order
+book functionality it is possible to have near-real time access to the access via equivalent DMA. The Binance API has a refresh rate of
+200ms for the book.
+
+We can simply call the :code:`view_book()` function to get a snapshot of the book. It returns a
+ladder-like DataFrame with bid/ask volumes in num of tokens and Prices. The ticks are NOT uniform.
+
+.. code::
+
+    book = CSUite.view_book(client, symbol='BNBUSDT', limit=100)
+
+Get Quote
+**********
+In certain use cases it may be useful to access only the best bid ask & volume at those ticks
+in such cases we offer a parsed version of the book function via :code:`get_quote()` which directly interacts
+with the Binance API for high speeds.
+
+.. code::
+
+    quote  = CSuite.get_quote(client, symbol='BTCUSDT')
+
+Getting Symbol Trade Parameters
+*********************************
 
 Get Futures Data
 -----------------
-Alongside Spot functionality, the library supports retrival and operation in the Binance Futures Market. It is possible to access futures Timeseries data through
-the provided functions. 
+Alongside Spot functionality, the library supports retrieval and operation in the Binance Futures Market. It is possible to access futures Timeseries data through
+the provided functions.
 
-:code:`BTC_PERP = CSuite.get_FutureKlines(client, 'BNBUSDT', '1d')`
+.. code-block::
+
+    BTC_PERP = CSuite.get_FutureKlines(client, 'BNBUSDT', '1d')
 
 Get Futures-Spot Spread
 ************************
 The connection to both futures & spot markets on Binance, it may be useful to monitor the spread. This is possible via the following:
 
-:code:`spread = get_FuturesSpread(client, 'BTCUSDT', '1m')`
+.. code-block::
+
+    spread = get_FuturesSpread(client, 'BTCUSDT', '1m')
 
 Get Futures Open Interest
 **************************
 
-:code:`open_interest = get_FuturesOI(client, 'BTCUSDT', '30m')`
+.. code-block::
+
+    open_interest = get_FuturesOI(client, 'BTCUSDT', '30m')
 
 Get Futures Long-Short
 ***********************
 
-:code:`long_short = get_FuturesLS(client, 'BTCUSDT, )`
+.. code-block::
+
+    long_short = get_FuturesLS(client, 'BTCUSDT, period)
 
 Get Futures Funding Rate
 *************************
 
-:code:`funding_rate = get_FuturesFundingRate(client, 'BTCUSDT', )`
+.. code-block::
+
+    funding_rate = get_FuturesFundingRate(client, 'BTCUSDT', period)
 
 
 Options Data
@@ -74,14 +115,20 @@ Options Data
 Get Option Skew
 *****************
 
-:code:`skew = get_options_skew(client, maturity, strikes)`
+.. code-block::
+
+    skew = get_options_skew(client, maturity, strikes)`
 
 Get Multiple Issue Skew
 ************************
 
-:code:`data = get_omm_skew(client, [''], [''])`
+.. code-block::
+
+    data = get_omm_skew(client, [''], [''])
 
 Options Vol Smirk
 *******************
 
-:code:`iv = IV_skew(data, price)`
+.. code-block::
+
+    iv = IV_skew(data, price)

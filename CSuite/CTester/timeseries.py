@@ -2,6 +2,7 @@ import pandas as pd
 import CSuite.CSuite.BConnector as connector
 import numpy as np
 import scipy.stats as stats
+import matplotlib.pyplot as plt
 
 
 class TimeSeries:
@@ -104,3 +105,81 @@ class TimeSeries:
         df.loc[0] = ks
 
         return df
+
+
+class Plotter:
+    timeSeries = TimeSeries
+    path = ''
+
+    def __init__(self, timeSeries, path=''):
+        self.timeSeries = timeSeries
+
+    # Returns a basic timeseries plot with either Price, Return or Volatility
+    def plot(self, period=365, mode='N', col='close', save=False):
+        plt.clf()
+        fig, ax = plt.subplots()
+        if mode == 'N':
+            ax.set_title('Price of {}'.format(self.timeSeries.symbol))
+            ax.set_ylabel('Price ($ per unit)')
+            ax.set_xlabel('Time (Days)')
+            ax.plot(self.timeSeries.data[col][-period:])
+
+        elif mode == 'R':
+            ax.set_title('Cumulative Return of {}'.format(self.timeSeries.symbol))
+            ax.set_ylabel('Return (%)')
+            ax.set_xlabel('Time (Days)')
+            ax.plot(self.timeSeries.data[col][-period:].pct_change().cumsum()*100)
+            ax.axhline(0, color='black', linewidth=1, linestyle='--')
+
+        elif mode == 'V':
+            ax.set_title('7-Day Rolling Volatility for {}'.format(self.timeSeries.symbol))
+            ax.set_ylabel('7-Day Rolling Std (%)')
+            ax.set_xlabel('Time (Days)')
+            ax.plot(self.timeSeries.data[col][-period:].pct_change().cumsum().rolling(7).std()*100)
+            ax.axhline(0, color='black', linewidth=1, linestyle='-')
+
+        plt.show()
+        if save:
+            plt.savefig('{}timeseries_{}.jpg'.format(self.path, self.timeSeries.symbol), dpi=800)
+
+    # Returns a Quartile-Quantile Plot for either returns or volatility distributions
+    def plot_qq(self, period=365, mode='R', save=False):
+        plt.clf()
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        if mode == 'R':
+            stats.probplot(self.timeSeries.data[self.timeSeries.col].pct_change()[-period:], dist='norm', plot=ax)
+        elif mode == 'V':
+            stats.probplot(self.timeSeries.data[self.timeSeries.col].pct_change()[-period:].rolling(7).std()*100, dist="norm", plot=ax)
+        ax.set_title('Quantile-Quartile Plot for {} Return Distribution'.format(self.timeSeries.symbol))
+        ax.axhline(0, color='black', linewidth=0.5, linestyle='--')
+        ax.axvline(0, color='black', linewidth=0.5, linestyle='--')
+        plt.show()
+        if save:
+            plt.savefig('{}QQPlot_{}.jpg'.format(self.path, self.timeSeries.symbol), dpi=800)
+
+    # Returns the seasonality bar plot
+    def plot_seasonality(self, save=False):
+        frame = self.timeSeries.seasonality()
+        plt.clf()
+        fig, ax = plt.subplots()
+        ax.axhline(0, color='black', linewidth=1)
+        ax.bar(x=frame['months'], height=frame['seasonality'], color=frame.positive.map({True: 'g', False: 'r'}),
+               edgecolor='black')
+        ax.set_title('Seasonality Plot for {}'.format(self.timeSeries.symbol))
+        ax.set_xlabel('Months')
+        ax.set_ylabel('Average Monthly Return (%)')
+
+        for i in range(0, 12):
+            h = 0.5
+            if frame['positive'][i]:
+                h = -0.5
+            text = ax.text(frame['months'][i], h,
+                           str(round(frame['seasonality'][i], 1)) + '%', ha="center", va="center", color="black",
+                           fontsize=8)
+
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        plt.show()
+        if save:
+            plt.savefig('{}seasonality_{}.jpg'.format(self.path, self.timeSeries.symbol), dpi=800)

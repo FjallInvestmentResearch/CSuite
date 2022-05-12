@@ -78,15 +78,17 @@ details such as the trading status, tickSize, and minimum notional are included.
 Get Futures Data
 -----------------
 Alongside Spot functionality, the library supports retrieval and operation in the Binance Futures Market. It is possible to access futures Timeseries data through
-the provided functions.
+the provided functions. 
+The :code:`get_FutureKlines()` function works exactly like the :code:`get_SpotKline()` described above.
 
 .. code-block::
 
-    BTC_PERP = CSuite.get_FutureKlines(client, 'BNBUSDT', '1d')
+    BNB_PERP = CSuite.get_FutureKlines(client, 'BNBUSDT', '1d')
 
 Get Futures-Spot Spread
 ************************
-The connection to both futures & spot markets on Binance, it may be useful to monitor the spread. This is possible via the following:
+We have bundled the functionality of comparing the Spot and Futures by 
+downloading and parsing both :code:`get_FutureKlines()` & :code:`get_SpotKline()`. This is possible via the following:
 
 .. code-block::
 
@@ -94,6 +96,7 @@ The connection to both futures & spot markets on Binance, it may be useful to mo
 
 Get Futures Open Interest
 **************************
+The Open Interest statistic is available through Binance API and can be retived simply.
 
 .. code-block::
 

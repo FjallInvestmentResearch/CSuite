@@ -1,4 +1,5 @@
 import CSuite.CSuite.CTrader as ct
+import numpy as np
 
 
 # Tick-Match Execution Algorithm
@@ -20,8 +21,8 @@ def tick_match(client, ticker, size, tickSize, distance=5, retry=10, refresh=2):
         order = ct.orderEntry.LimitOrder(client, price, abs(size), ticker, 0, 'GTC').submit()
 
         # If order is active
-        if type(order) != bool:
-            orderId = order['orderId']
+        if order.orderId != '':
+            orderId = order.orderId
             # Report Submission
             print('Order Num {}'.format(str(k+1))+' -Status: '+order['status'] + ' Id: '+str(orderId)+' Price: '+str(price))
             ids.append([orderId, book])
@@ -31,7 +32,7 @@ def tick_match(client, ticker, size, tickSize, distance=5, retry=10, refresh=2):
 
             # If not filled yet then cancel
             if qty < 1:
-                cancel = client.cancel_order(symbol=ticker, orderId=orderId)
+                cancel = order.cancel()
                 if cancel['status'] == 'CANCELED':
                     print('Order Num {}: Cancelled!'.format(k+1))
             else:
@@ -66,11 +67,45 @@ def midpoint_match(client, ticker, size, tickSize, retry=10):
         # Monitor output
         print('Strike: '+str(midpoint)+' - Best Bid: ' + str(book[0][0]) + ' Best Ask: '+str(book[1][0]))
         # If order active then save orderId and Book used for record
-        if type(order) != bool and len(order) > 0:
-            orderId = order['orderId']
+        if order.orderId != '':
+            orderId = order.orderId
             record.append([orderId, book])
             # Stop sending orders if any is filled
-            if order['status'] == 'FILLED':
+            if order.status == 'FILLED':
+                print('Order Filled!')
+                return record
+        else:
+            print(order)
+            print('Order not Routed!')
+            return False
+        return record
+
+
+def mini_lot(client, symbol, size, tickSize, minQty, minNotional, retry):
+    record = []
+    for k in range(0, retry):
+        book = ct.connector.get_quote(client, symbol)
+        if size > 0:
+            strike = book[1][0]
+        else:
+            strike = book[0][0]
+        strike = round(float(strike), int(abs(np.log10(tickSize))))
+        qty = round(minNotional/strike, int(abs(np.log(minQty))))
+        while qty * strike < minNotional*1.002:
+            qty = qty + minQty
+
+        strike = float(str(strike)[:int(abs(np.log10(tickSize)))+3])
+        qty = float(str(qty)[:int(abs(np.log10(minQty)))+3])
+        qty = qty * size
+
+        print('Strike: '+str(strike)+' // Qty: '+str(qty)+' // Value: '+str(qty*strike))
+
+        order = ct.LimitOrder(client, strike, qty, symbol, 0, 'IOC').submit()
+        if order.orderId != '':
+            orderId = order.orderId
+            record.append([orderId, book])
+            # Stop sending orders if any is filled
+            if order.status == 'FILLED':
                 print('Order Filled!')
                 return record
         else:

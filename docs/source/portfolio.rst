@@ -5,7 +5,7 @@ Handing Timeseries
 -------------------
 
 .. image:: plots/test.jpg
-    :width: 250px
+    :width: 50px
     :height: 150px
 
 .. image:: plots/szn.jpg

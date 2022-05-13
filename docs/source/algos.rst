@@ -154,7 +154,7 @@ The algorithm executes by posting Limit Orders at a set distance from the BBO, s
 each order is the defualt and the time until the order is force cancelled is set via the :code:`refresh` parameter. Each refresh cycle is
 approx. 600ms. 
 
-Parameters
+**Parameters**
 
 +------------+------------+-----------+-----------+------------------------+
 | **Name**   | **Type**   |**Example**|**Default**|  **Decription**        |
@@ -174,7 +174,9 @@ Parameters
 | refresh    | int        | 1, 3      |    1      |num of monitor cycles   |
 +------------+------------+-----------+-----------+------------------------+
 
-Returns
+**Returns**
+
+Execution algorithms generally return an execution record comprised out of the BBO at execution time coupled with the orderId. 
 
 
 Direct Access
@@ -197,6 +199,19 @@ via OrderEngine Wrapper
 
 Mid-Point Match
 ***************
+Mid-Point Market is a propriatery neutral high-fill rate algorithm designed for immediate execution in mean-reversion strategies. This algorithm posts aggressive limit orders 
+at the mid-point (if it exists) or the best side BBO - i.e. if buy then best bid, if sell then best ask. 
+
+Direct Access
+^^^^^^^^^^^^^^
+
+via OrderEngine Wrapper
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: 
+
+    engine = OrderEngine(client, 'ADAUSDT', ledger)
+    execution = engine.midpoint_match(size=50, retry=10)
 
 Mini-Lot
 ********

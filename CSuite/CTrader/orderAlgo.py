@@ -81,7 +81,8 @@ def midpoint_match(client, ticker, size, tickSize, retry=10):
         return record
 
 
-def mini_lot(client, symbol, size, tickSize, minQty, minNotional, retry):
+# TEST
+def mini_lot(client, symbol, size, tickSize, minQty, minNotional=10, retry=10):
     record = []
     for k in range(0, retry):
         book = ct.connector.get_quote(client, symbol)

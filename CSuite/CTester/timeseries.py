@@ -183,3 +183,19 @@ class Plotter:
         plt.show()
         if save:
             plt.savefig('{}seasonality_{}.jpg'.format(self.path, self.timeSeries.symbol), dpi=800)
+
+    # Plots autocorrelation or differencing for specified lags
+    def plot_acf(self, period=365, lags=50, diff=False, save=False):
+        plt.clf()
+        fig, ax = plt.subplots()
+        acf = self.timeSeries.autocorrelation(period=period, diff=diff, lags=lags)
+        ax.stem(acf, use_line_collection=True, linefmt='C0-', basefmt='C7-', markerfmt='C1*')
+        if diff:
+            ax.set_title('Autocorrelation Differencing for 50 lags')
+        else:
+            ax.set_title('Autocorrelation Chart for 50 lags')
+        ax.set_ylabel('Correlation Coefficient')
+        ax.set_xlabel('Lags (n)')
+        plt.tight_layout()
+        if save:
+            plt.savefig('{}acf_{}.jpg'.format(self.path, self.timeSeries.symbol), dpi=800)

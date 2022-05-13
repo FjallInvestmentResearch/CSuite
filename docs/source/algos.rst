@@ -33,6 +33,8 @@ Building an Order
 Submitting the Order
 :code:`order.submit()`
 
+.. warning:: Iceberg orders are currently not supported
+
 Limit Order
 ************
 A limit order is a type of order to purchase or sell a security at a specified price or better. 
@@ -102,7 +104,6 @@ No :code:`timeInForce` parameter is necessary as all Market Orders are flagged f
 Market Order supports a stop through the :code:`stop`  parameter which has a defualt value of 0. The stop is set as a nominal (price) value which is automatically
 converted into a TP or SL. For example passing a price of 100 and a stop of 120 would imply a Take Profit (TP), conversly a stop of 80 would imply a Stop Loss (SL)
 
-
 +------------+------------+-----------+-----------+
 | **Name**   | **Type**   |**Example**|**Default**|
 +------------+------------+-----------+-----------+
@@ -123,7 +124,6 @@ no SL/TP.
 Post-Only Order
 ****************
 
-.. warning:: Iceberg orders are currently not supported
 
 Order Book Functions
 ---------------------
@@ -150,21 +150,50 @@ Tick Match
 ***********
 Tick Match (or Peg Match) is a propriatery high-speed, high-fill peg algorithm that requires no counterparty 
 (i.e. executes in the market). Tick Match enables the trader to peg an order at a specific tick distance from the BBO. 
-For example, the algorithm executes by posting Limit Orders at a set distance from the BBO, say 2 or 3 ticks. Continous monitoring of 
-each order is the defualt and the time until the order is force cancelled is set via the :code:`refresh` parameter. 
+The algorithm executes by posting Limit Orders at a set distance from the BBO, say 2 or 3 ticks. Continous monitoring of 
+each order is the defualt and the time until the order is force cancelled is set via the :code:`refresh` parameter. Each refresh cycle is
+approx. 600ms. 
+
+Parameters
+
++------------+------------+-----------+-----------+------------------------+
+| **Name**   | **Type**   |**Example**|**Default**|  **Decription**        |
++------------+------------+-----------+-----------+------------------------+
+| client     | Client     | Object    |  None     | API client             |
++------------+------------+-----------+-----------+------------------------+
+| symbol     | String     | 'BTCUSDT' |  None     | Binance symbol str     |
++------------+------------+-----------+-----------+------------------------+
+| size (qty) | Float      | 0,  1.25  |    0      | Order qty (neg = sell) |
++------------+------------+-----------+-----------+------------------------+
+| tickSize   | Float      | 0.0001    |    0      | min tradable tick      |
++------------+------------+-----------+-----------+------------------------+
+| distance   | int        | 1, 12     |    5      | tick distance from BBO |
++------------+------------+-----------+-----------+------------------------+
+| retry      | int        | 5,  25    |    10     |num of order submissions|
++------------+------------+-----------+-----------+------------------------+
+| refresh    | int        | 1, 3      |    1      |num of monitor cycles   |
++------------+------------+-----------+-----------+------------------------+
+
+Returns
+
 
 Direct Access
-^^^^^^^^^^^^^^
-Using the generalised :code:`tick_match` funnction we have full granular control of the execution. The required parameters are the following
+^^^^^^^^^^^^^^^
 
-Example code for running the algo to buy 1 'BNB' token by sending 10 consecutive orders each at 3 ticks from the BBO. Furthermore, each order is monitored
-twice (specified via refresh) before forced cancelled if not filled. 
 .. code-block:: 
 
     execution = CSUite.tick_match(client, symbol='BNBUSDT', size=1, tickSize=0.001, distance=3, retry=10, refresh=2)
 
+Example code for running the algo to buy 1 'BNB' token by sending 10 consecutive orders each at 3 ticks from the BBO. Furthermore, each order is monitored
+twice (specified via refresh) before forced cancelled if not filled. 
+
 via OrderEngine Wrapper
 ^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: 
+
+    engine = OrderEngine(client, 'BTCUSDT', ledger)
+    execution = engine.tick_match(size=0.02, distance=3, retry=10, refresh=1)
 
 Mid-Point Match
 ***************

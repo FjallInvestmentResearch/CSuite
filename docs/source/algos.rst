@@ -197,13 +197,32 @@ via OrderEngine Wrapper
     engine = OrderEngine(client, 'BTCUSDT', ledger)
     execution = engine.tick_match(size=0.02, distance=3, retry=10, refresh=1)
 
+
 Mid-Point Match
 ***************
 Mid-Point Market is a propriatery neutral high-fill rate algorithm designed for immediate execution in mean-reversion strategies. This algorithm posts aggressive limit orders 
 at the mid-point (if it exists) or the best side BBO - i.e. if buy then best bid, if sell then best ask. 
 
++------------+------------+-----------+-----------+------------------------+
+| **Name**   | **Type**   |**Example**|**Default**|  **Decription**        |
++------------+------------+-----------+-----------+------------------------+
+| client     | Client     | Object    |  None     | API client             |
++------------+------------+-----------+-----------+------------------------+
+| symbol     | String     | 'BTCUSDT' |  None     | Binance symbol str     |
++------------+------------+-----------+-----------+------------------------+
+| size (qty) | Float      | 0,  1.25  |    0      | Order qty (neg = sell) |
++------------+------------+-----------+-----------+------------------------+
+| tickSize   | Float      | 0.0001    |    0      | min tradable tick      |
++------------+------------+-----------+-----------+------------------------+
+| retry      | int        | 5,  25    |    10     |num of order submissions|
++------------+------------+-----------+-----------+------------------------+
+
 Direct Access
 ^^^^^^^^^^^^^^
+
+.. code-block::
+    
+    execution = CSUite.midpoint_match(client, symbol, size, tickSize, retry)
 
 via OrderEngine Wrapper
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -215,3 +234,40 @@ via OrderEngine Wrapper
 
 Mini-Lot
 ********
+Mini-Lot is a special excution algorithm dealing in mini-lots (i.e. lots close as possible to the :code:`minNotiona`). It places Immediate-Or-Cancel (IOC) 
+orders at the BBO without crossing the spread, acting somewhat passively. This algorithm may be used to immediately acquire small quantities either to run small
+systematic trading accounts, or
+
++------------+------------+-----------+-----------+------------------------+
+| **Name**   | **Type**   |**Example**|**Default**|  **Decription**        |
++------------+------------+-----------+-----------+------------------------+
+| client     | Client     | Object    |  None     | API client             |
++------------+------------+-----------+-----------+------------------------+
+| symbol     | String     | 'BTCUSDT' |  None     | Binance symbol str     |
++------------+------------+-----------+-----------+------------------------+
+| size (qty) | Float      | 0,  1.25  |    0      | Order qty (neg = sell) |
++------------+------------+-----------+-----------+------------------------+
+| tickSize   | Float      | 0.001     |    0      | min tradable tick      |
++------------+------------+-----------+-----------+------------------------+
+| stepSize   | Float      | 0.1       |    0.1    | min Qty step size      |
++------------+------------+-----------+-----------+------------------------+
+| minNotional| Float      | 5,  25    |    10.0   | min total order value  |
++------------+------------+-----------+-----------+------------------------+
+| retry      | int        | 1, 3      |    10     |num of order submissions|
++------------+------------+-----------+-----------+------------------------+
+
+Direct Access
+^^^^^^^^^^^^^^
+
+.. code-block::
+    
+    execution = CSUite.mini_lot(client, symbol, size, tickSize, setpSize, minNotional, retry)
+
+
+via OrderEngine Wrapper
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: 
+
+    engine = OrderEngine(client, symbol, ledger)
+    execution = engine.mini_lot(size, retry)

@@ -199,3 +199,24 @@ class Plotter:
         plt.tight_layout()
         if save:
             plt.savefig('{}acf_{}.jpg'.format(self.path, self.timeSeries.symbol), dpi=800)
+
+    def benchmark(self, benchmark='BTCUSDT', period=365, delta=False, save=False):
+        plt.clf()
+        benchmark = TimeSeries(self.timeSeries.client).download(benchmark, self.timeSeries.interval)
+        frame = pd.DataFrame()
+        frame['data'] = self.timeSeries.data[self.timeSeries.col][-period:].pct_change().dropna().cumsum()*100
+        frame['bench'] = benchmark.data[self.timeSeries.col][-period:].pct_change().dropna().cumsum()*100
+        frame['delta'] = frame['data'] - frame['bench']
+        fig, ax = plt.subplots()
+        if delta is False:
+            ax.plot(frame['data'], color='r', label=self.timeSeries.symbol)
+            ax.plot(frame['bench'], color='b', label=benchmark.symbol)
+        else:
+            ax.plot(frame['delta'], color='r', label='Comparative Performance')
+        ax.axhline(0, linewidth=1, linestyle='-', color='black')
+        ax.set_title('Benchmarking Plot')
+        ax.set_xlabel('Time (Days)')
+        ax.set_ylabel('Return (%)')
+        plt.legend()
+        if save:
+            plt.savefig('{}bench_{}.jpg'.format(self.path, self.timeSeries.symbol), dpi=800)

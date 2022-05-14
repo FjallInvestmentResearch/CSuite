@@ -292,24 +292,14 @@ class OrderEngine:
 
         if type == 'LMT' and price != 0:
             tmp_order = LimitOrder(self.client, price, size, self.ticker, stop, timeInForce)
-            self.orderId = tmp_order['orderId']
+            self.orderId = tmp_order.orderId
             return tmp_order
         elif type == 'MKT':
             tmp_order = MarketOrder(self.client, size, self.ticker, stop)
-            self.orderId = tmp_order['orderId']
+            self.orderId = tmp_order.orderId
             return tmp_order
         else:
             return False
-
-        # Sends the Order to the exchange
-        def send():
-            return tmp_order.submit()
-
-        # Sends a test order to the exchange
-        def test():
-            return tmp_order.test()
-
-        return tmp_order
 
     # Runs the Tick-Match Algorithm, need pass only size and preferably distance
     def tick_match(self, size, distance=5, retry=10, refresh=2):
@@ -320,3 +310,9 @@ class OrderEngine:
     def midpoint_match(self, size, retry=10):
         return C.midpoint_match(self.client, self.ticker, float(size),
                                 float(self.ledger.loc[self.ticker]['tickSize']), retry=retry)
+
+    # Runs the Mini-Lot Algorithm requiring only the size input
+    def mini_lot(self, size, retry=10):
+        return C.mini_lot(self.client, self.ticker, float(size), float(self.ledger.loc[self.ticker]['tickSize']),
+                          float(self.ledger.loc[self.ticker]['stepSize']),
+                          float(self.ledger.loc[self.ticker]['minNotional']), retry)

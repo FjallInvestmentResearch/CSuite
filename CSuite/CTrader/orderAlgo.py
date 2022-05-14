@@ -81,28 +81,35 @@ def midpoint_match(client, ticker, size, tickSize, retry=10):
         return record
 
 
-# TEST
+# Mini-Lot enables execution of minimum possible size lots using current BBO
 def mini_lot(client, symbol, size, tickSize, minQty, minNotional=10, retry=10):
     record = []
+    # Sequential submission
     for k in range(0, retry):
         book = ct.connector.get_quote(client, symbol)
+        # choose between best bid or best ask based on direction
         if size > 0:
             strike = book[1][0]
         else:
             strike = book[0][0]
+        # calculate strike and qty freely
         strike = round(float(strike), int(abs(np.log10(tickSize))))
         qty = round(minNotional/strike, int(abs(np.log(minQty))))
-        while qty * strike < minNotional*1.002:
+        # in some cases the qty calculation might be off by a bit,
+        # thus we sequentially add 1 tick until we exceed minNotional + 0.5%
+        while qty * strike < minNotional*1.0005:
             qty = qty + minQty
 
+        # use string conversion to pass the exact right value of strike & qty if it rounds high
         strike = float(str(strike)[:int(abs(np.log10(tickSize)))+3])
         qty = float(str(qty)[:int(abs(np.log10(minQty)))+3])
         qty = qty * size
-
+        # print statement
         print('Strike: '+str(strike)+' // Qty: '+str(qty)+' // Value: '+str(qty*strike))
-
+        # build & submit order
         order = ct.LimitOrder(client, strike, qty, symbol, 0, 'IOC').submit()
-        if order.orderId != '':
+        # check order, record and if filled then stop
+        if order != {} and order.orderId != '':
             orderId = order.orderId
             record.append([orderId, book])
             # Stop sending orders if any is filled

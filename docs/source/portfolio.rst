@@ -22,7 +22,7 @@ Download
     timeSeries = TimeSeries.download(symbol, interval)
 
 
-**Requires:** *symbol*, *interval*
+**Requires:** *str: symbol*, *str: interval*
 
 **Returns:** *Self*
 
@@ -36,7 +36,7 @@ Slice
 
     TimeSeries = TimeSeries.slice(col)
 
-**Requires:** *col*
+**Requires:** *str: col*
 
 **Returns:** *self* 
 
@@ -49,11 +49,11 @@ Summarize
     
     summary = TimeSeries.summarize(period=365)
 
-**Requires:** *period*
+**Requires:** *int: period*
 
 **Returns:** *Pandas DataFrame*
 
-The :code:`summary()` method returns a formatted DataFrame of summary statistics for the timeseries. 
+The :code:`summary()` method returns a formatted DataFrame of summary statistics for the timeseries.
 
 +--------+------------+--------+---------+-------------+--------+------+----------+
 | Return | Volatility | Sharpe | Sortino | MaxDrawDown | Calmar | Skew | Kurtosis |
@@ -65,9 +65,11 @@ Linear Regression
 
     est = TimeSeries.lin_reg(period=365)
 
-**Requires:** *period*
+**Requires:** *int: period*
 
 **Returns:** *float*
+
+This method returns the estimated annualised returns using Linear Regression. 
 
 Seasonality
 ************
@@ -79,15 +81,21 @@ Seasonality
 
 **Returns:** *Pandas DataFrame*
 
+This method returns a Panadas DataFrame with the average performed return by buissness month over the history of the timeSeries. 
+This only works for intervals of '1d' or more. 
+
 Autocorrelation
 ****************
 .. code:: 
 
     acf = TimeSeries.autocorrelation(period=365, lags=50, diff=False)
 
-**Requires:** *period*, *lags*, *diff*
+**Requires:** *int: period*, *int: lags*, *bool: diff*
 
 **Returns:** *Pandas DataFrame*
+
+Returns autocorrrelation estimation across different lags as specified in the *lag* parameter.
+Autocorrelation differencing is possible by enabling the *diff* parameter. 
 
 A.D. Fuller
 ************
@@ -95,20 +103,76 @@ A.D. Fuller
 
     adf = TimeSeries.adfuller(maxlags=5, mode='L', regression='ct')
 
-**Requires:** *maxlags*, *mode*, *regression*
+**Requires:** *int: maxlags*, *str: mode*, *str: regression*
 
 **Returns:** *Pandas DataFrame*
+
+This method performs the A.D. Fuller test using the `statsmodels adf module <https://www.statsmodels.org/dev/generated/statsmodels.tsa.stattools.adfuller.html#statsmodels.tsa.stattools.adfuller>`_ 
+and returns a Pandas DataFrame of relevant values as shown below. The regression input is directly related to the statsmodels implementation and represents the type of 
+regression calculated.
+
++-----------+---------+------+--------+---------+----------+-----+
+| ADF Value | P-Value | Lags | N Obs  | C.V. 1% | C.V. 10% | IC  |
++-----------+---------+------+--------+---------+----------+-----+
+
+The A.D. Fuller test supports multiple price calculation methods, we have simplified the application
+of Logarithmic price transformation for the test through the *mode* parameter.  
+
+Acceptable Modes
+^^^^^^^^^^^^^^^^^
+
+* **Nominal** ('N'): Standard non-normalised price as downloaded via OCHL & sliced using *col*
+* **Logarithmic** ('L'): Applies Logarithmic transformation to prices. 
+
+.. note:: 
+
+    We are working on implementing a Normalized Price Ratio (NPR) mode. 
 
 
 Plotting Timeseries
 -------------------
 
+.. code-block:: 
+
+    plotter = Plotter(TimeSeries, path)
+
+TimeSeries Plots
+****************
+.. code-block:: 
+
+    Plotter(TimeSeries).plot(period=365, mode='N', save=False)
 
 .. image:: plots/test.jpg
-    :width: 50px
+    :width: 250px
+    :height: 150px
+    :align: right
+
+Quantile Plots
+**************
+
+.. image:: plots/qq.jpg
+    :width: 250px
     :height: 150px
 
+Seasonality Plot
+*****************
+
 .. image:: plots/szn.jpg
+    :width: 250px
+    :height: 150px
+
+Autocorrelation Plot
+********************
+
+.. image:: plots/acf.jpg
+    :width: 250px
+    :height: 150px
+
+
+Benchmark Plot
+**************
+
+.. image:: plots/bnch.jpg
     :width: 250px
     :height: 150px
 

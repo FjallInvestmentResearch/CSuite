@@ -45,7 +45,7 @@ class TimeSeries:
         skew = self.data[self.col].pct_change().skew()
         kurt = self.data[self.col].pct_change().kurtosis()
 
-        frame = pd.DataFrame(columns = ['Return', 'Vollatility', 'Sharpe', 'Sortino', 'MaxDrawDown', 'Calmar', 'Skew', 'Kurtosis'])
+        frame = pd.DataFrame(columns=['Return', 'Volatility', 'Sharpe', 'Sortino', 'MaxDrawDown', 'Calmar', 'Skew', 'Kurtosis'])
         frame.loc[0] = [round(returnP, 4)*100, round(stdP, 4)*100, round(sharpeP, 3), round(sortino, 3), round(max_daily_draw_down, 3), round(calmar, 3), round(skew, 3), round(kurt, 3)]
 
         return frame

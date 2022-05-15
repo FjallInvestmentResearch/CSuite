@@ -28,9 +28,6 @@ class Portfolio:
         self.data = data
         return self
 
-    def get_data(self):
-        return self.data
-
     def summarize(self):
 
         returns = self.data.pct_change()

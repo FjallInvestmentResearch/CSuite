@@ -142,8 +142,8 @@ TimeSeries Plots
     Plotter(TimeSeries).plot(period, mode, save)
 
 .. image:: plots/test.jpg
-    :width: 250px
-    :height: 150px
+    :width: 350px
+    :height: 210px
     :align: left
 
 This function enables plotting of a timeSeries and automates conversion into either *Returns* or
@@ -167,8 +167,8 @@ Quantile Plots
     Plotter(TimeSeries).plot_qq(period, mode, save)
 
 .. image:: plots/qq.jpg
-    :width: 250px
-    :height: 150px
+    :width: 350px
+    :height: 210px
     :align: left
 
 This function plots *Quantile-Quantile* with reference to normal distributions for quick analysis of 
@@ -191,9 +191,12 @@ Seasonality Plot
 
 
 .. image:: plots/szn.jpg
-    :width: 250px
-    :height: 150px
+    :width: 350px
+    :height: 210px
+    :align: left
 
+This function plots the seasonality statistic, i.e. the average performed monthly return of the timeseries. 
+It shows a matplotlib barplot with relevant information which can be saved. 
 
 **Requires:** *bool: save*
 
@@ -206,8 +209,12 @@ Autocorrelation Plot
     Plotter(TimeSeries).plot_acf(period, lags, diff, save)
 
 .. image:: plots/acf.jpg
-    :width: 250px
-    :height: 150px
+    :width: 350px
+    :height: 210px
+    :align: left
+
+This function plots the autocorrelation for specified lags; it can plot differenced autocorrelation by enabling the :code:`diff` parameter.
+It shows a matplotlib stemplot which can be saved. 
 
 **Requires:** *int: period*, *int: lags*, *bool: diff*, *bool: save*
 
@@ -220,8 +227,12 @@ Benchmark Plot
     Plotter(TimeSeries).benchmark(benchmark, period, delta, save)
 
 .. image:: plots/bnch.jpg
-    :width: 250px
-    :height: 150px
+    :width: 350px
+    :height: 210px
+    :align: left
+
+This function plots the specified timeseries against a benchmark timeseries. It may return the 1:1 spread (delta) between the two timeseries via 
+the :code:`delta` parameter. It shows a matplotlib lineplot which can be saved.
 
 **Requires:** *str: benchmark*, *int: period*, *bool: delta*, *bool: save*
 
@@ -229,3 +240,21 @@ Benchmark Plot
 
 Handling Portfolios
 --------------------
+
+Calculte Equity Curve
+**********************
+
+Load Data
+*********
+
+Summarize
+**********
+
+Monte Carlo Engine
+-------------------
+
+Run Simulation
+***************
+
+Efficient Frontier
+******************

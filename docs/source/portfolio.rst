@@ -144,7 +144,11 @@ TimeSeries Plots
 .. image:: plots/test.jpg
     :width: 250px
     :height: 150px
-    :align: right
+    :align: left
+
+**Requires:** *int: period*, *str: mode*, *bool: save*
+
+**Returns:** *Null*
 
 This function enables plotting of a timeSeries and automates conversion into either *Returns* or
 *Volatility* via the *mode* parameter. 
@@ -162,10 +166,13 @@ Quantile Plots
 
     Plotter(TimeSeries).plot_qq(period, mode, save)
 
-
 .. image:: plots/qq.jpg
     :width: 250px
     :height: 150px
+
+**Requires:** *int: period*, *str: mode*, *bool: save*
+
+**Returns:** *Null*
 
 Seasonality Plot
 *****************
@@ -178,6 +185,10 @@ Seasonality Plot
     :width: 250px
     :height: 150px
 
+**Requires:** *bool: save*
+
+**Returns:** *Null*
+
 Autocorrelation Plot
 ********************
 .. code-block:: 
@@ -188,17 +199,23 @@ Autocorrelation Plot
     :width: 250px
     :height: 150px
 
+**Requires:** *int: period*, *int: lags*, *bool: diff*, *bool: save*
+
+**Returns:** *Null*
 
 Benchmark Plot
 **************
 .. code-block:: 
 
-    Plotter(TimeSeries).benchmark(Benchmark, period, delta, save)
+    Plotter(TimeSeries).benchmark(benchmark, period, delta, save)
 
 .. image:: plots/bnch.jpg
     :width: 250px
     :height: 150px
 
+**Requires:** *str: benchmark*, *int: period*, *bool: delta*, *bool: save*
+
+**Returns:** *Null*
 
 Handling Portfolios
 --------------------

@@ -146,18 +146,18 @@ TimeSeries Plots
     :height: 150px
     :align: left
 
+This function enables plotting of a timeSeries and automates conversion into either *Returns* or
+*Volatility* via the *mode* parameter. This is a simplified way to see the basic (Level I) timeseries data.
+
 **Requires:** *int: period*, *str: mode*, *bool: save*
 
 **Returns:** *Null*
 
-This function enables plotting of a timeSeries and automates conversion into either *Returns* or
-*Volatility* via the *mode* parameter. 
-
 **Acceptable Modes**
 
-* **Nominal** ('N')
-* **Returns** ('R')
-* **Volatility** ('V')
+* **Nominal** ('N'): Plots the prices in standard nominal format.
+* **Returns** ('R'): Plots the return as % gain/loss since period start.
+* **Volatility** ('V'): Plots 7-day rolling standard deviation (Volatility) since period start.
 
 
 Quantile Plots
@@ -169,10 +169,19 @@ Quantile Plots
 .. image:: plots/qq.jpg
     :width: 250px
     :height: 150px
+    :align: left
+
+This function plots *Quantile-Quantile* with reference to normal distributions for quick analysis of 
+the Return or Volatility distributions. 
 
 **Requires:** *int: period*, *str: mode*, *bool: save*
 
 **Returns:** *Null*
+
+**Acceptable Modes**
+
+* **Returns** ('R'): Plots the distribution of returns.
+* **Volatility** ('V'): Plots the distribution of volatility. 
 
 Seasonality Plot
 *****************
@@ -184,6 +193,7 @@ Seasonality Plot
 .. image:: plots/szn.jpg
     :width: 250px
     :height: 150px
+
 
 **Requires:** *bool: save*
 

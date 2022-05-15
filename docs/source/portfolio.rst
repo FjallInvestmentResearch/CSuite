@@ -118,8 +118,7 @@ regression calculated.
 The A.D. Fuller test supports multiple price calculation methods, we have simplified the application
 of Logarithmic price transformation for the test through the *mode* parameter.  
 
-Acceptable Modes
-^^^^^^^^^^^^^^^^^
+**Acceptable Modes**
 
 * **Nominal** ('N'): Standard non-normalised price as downloaded via OCHL & sliced using *col*
 * **Logarithmic** ('L'): Applies Logarithmic transformation to prices. 
@@ -140,15 +139,29 @@ TimeSeries Plots
 ****************
 .. code-block:: 
 
-    Plotter(TimeSeries).plot(period=365, mode='N', save=False)
+    Plotter(TimeSeries).plot(period, mode, save)
 
 .. image:: plots/test.jpg
     :width: 250px
     :height: 150px
     :align: right
 
+This function enables plotting of a timeSeries and automates conversion into either *Returns* or
+*Volatility* via the *mode* parameter. 
+
+**Acceptable Modes**
+
+* **Nominal** ('N')
+* **Returns** ('R')
+* **Volatility** ('V')
+
+
 Quantile Plots
 **************
+.. code-block:: 
+
+    Plotter(TimeSeries).plot_qq(period, mode, save)
+
 
 .. image:: plots/qq.jpg
     :width: 250px
@@ -156,6 +169,10 @@ Quantile Plots
 
 Seasonality Plot
 *****************
+.. code-block:: 
+
+    Plotter(TimeSeries).plot_seasonality(save)
+
 
 .. image:: plots/szn.jpg
     :width: 250px
@@ -163,6 +180,9 @@ Seasonality Plot
 
 Autocorrelation Plot
 ********************
+.. code-block:: 
+
+    Plotter(TimeSeries).plot_acf(period, lags, diff, save)
 
 .. image:: plots/acf.jpg
     :width: 250px
@@ -171,6 +191,9 @@ Autocorrelation Plot
 
 Benchmark Plot
 **************
+.. code-block:: 
+
+    Plotter(TimeSeries).benchmark(Benchmark, period, delta, save)
 
 .. image:: plots/bnch.jpg
     :width: 250px

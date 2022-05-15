@@ -7,13 +7,28 @@ We provide a Timeseries wrapper in the :code:`TimeSeries` object which can be us
 to atain information on a specified timeseries which can be passed normally as a pair OCHL or a custom pandas DataFrame.
 Investigating the properties of investable timeseries has never been easier!
 
-Initiating a Timeseries object is made possible by calling and then easily downloadin OCHL data for a 
-
 .. code-block:: 
 
     timeSeries = TimeSeries(client, data=pd.DataFrame())
 
-Contains object variables: client, data, col, symbol, interval 
+A :code:`TimeSeries()` requires a :code:`client` object and an optional :code:`data` input to calculate values from. The TimeSeries can be
+filled with the appropriate data using a custom pass argument on :code:`data` or via the standard :code:`download()` function. 
+Each TimeSeries contains 5 internal variables these being:
+
++------------+------------+-----------+-----------+------------------------------------+
+| **Name**   | **Type**   |**Example**|**Default**|  **Decription**                    |
++------------+------------+-----------+-----------+------------------------------------+
+| *client*   | Client     | Object    |  None     | API client                         |
++------------+------------+-----------+-----------+------------------------------------+
+| *data*     | DataFrame  | pd.frame  |  None     |pd.DataFrame containing TimeSeries  |
++------------+------------+-----------+-----------+------------------------------------+
+| *col*      | String     |'adj_close'|  'close'  | Frame to Series pointer            |
++------------+------------+-----------+-----------+------------------------------------+
+| *symbol*   | String     | 'BTCUSDT' |  None     |TimeSeries name                     |
++------------+------------+-----------+-----------+------------------------------------+
+| *interval* | String     | '1d'      |  None     |Specifies timeseries interval       |
++------------+------------+-----------+-----------+------------------------------------+
+
 
 Download
 ***********
@@ -202,6 +217,7 @@ It shows a matplotlib barplot with relevant information which can be saved.
 
 **Returns:** *Null*
 
+
 Autocorrelation Plot
 ********************
 .. code-block:: 
@@ -238,8 +254,38 @@ the :code:`delta` parameter. It shows a matplotlib lineplot which can be saved.
 
 **Returns:** *Null*
 
+
 Handling Portfolios
 --------------------
+We have packaged additional functionality through the :code:`Portfolio` object which enables users to calculate performance analyses on portfolios. 
+Through this object, it is possible to define and parameterise portfolio level quantitative data-points. This is also connected to the portoflio backtesting suite
+via the :code:`MonteCarlo` engine. 
+
+.. code-block:: 
+
+    portfolio = Portfolio(client, symbols, weights, interval, download)
+
+In the above statement, there is a simple definition of a portfolio, it contains a list of symbols and coresponding weights, a timeseries interval and a download check. 
+First, the :code:`symbols` need always get passed and represent the basic parameter of the portfolio. Second, the :code:`weights` parameter needs to be an array of floats summing to 1; however,
+if it ommitted it is automatically set to equal weighting across symbols. Third, the :code:`interval` paarameter represents the timeseries interval for the download, if the :code:`donwload` parameter is 
+False then :code:`interval` is ommitted. In the cases where :code:`download` is false, the :code:`weights` & :code:`interval` may be ommitted. 
+
+The input format for the :code:`data` parameter is a *Pandas DataFrame* with each column being a select single-variable timeseries of each asset, with the columns being the tickers. 
+
++------------+------------+-----------+-----------+------------------------------------+
+| **Name**   | **Type**   |**Example**|**Default**|  **Decription**                    |
++------------+------------+-----------+-----------+------------------------------------+
+| *client*   | Client     | Object    |  None     | API client                         |
++------------+------------+-----------+-----------+------------------------------------+
+| *symbols*  |str array   |['ADAUSDT']|  None     |pd.DataFrame containing TimeSeries  |
++------------+------------+-----------+-----------+------------------------------------+
+| *weights*  | float array|[0.3, 0.7] |  None     | Frame to Series pointer            |
++------------+------------+-----------+-----------+------------------------------------+
+| *interval* | String     | '1d'      |  None     |Specifies timeseries interval       |
++------------+------------+-----------+-----------+------------------------------------+
+| *download* | bool       | True      |  True     |  Download timeseries data or not?  |
++------------+------------+-----------+-----------+------------------------------------+
+
 
 Calculte Equity Curve
 **********************

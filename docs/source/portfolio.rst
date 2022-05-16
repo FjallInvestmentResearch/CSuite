@@ -126,9 +126,9 @@ This method performs the A.D. Fuller test using the `statsmodels adf module <htt
 and returns a Pandas DataFrame of relevant values as shown below. The regression input is directly related to the statsmodels implementation and represents the type of 
 regression calculated.
 
-+-----------+---------+------+--------+---------+----------+-----+
-| ADF Value | P-Value | Lags | N Obs  | C.V. 1% | C.V. 10% | IC  |
-+-----------+---------+------+--------+---------+----------+-----+
++-----------+---------+------+--------+---------+----------+----------+----+
+| ADF Value | P-Value | Lags | N Obs  | C.V. 1% | C.V. 5%  | C.V. 10% | IC |
++-----------+---------+------+--------+---------+----------+----------+----+
 
 The A.D. Fuller test supports multiple price calculation methods, we have simplified the application
 of Logarithmic price transformation for the test through the *mode* parameter.  
@@ -290,11 +290,39 @@ The input format for the :code:`data` parameter is a *Pandas DataFrame* with eac
 Calculte Equity Curve
 **********************
 
+.. code-block:: 
+
+    eqCurve = Portfolio.equity_curve(period=365)
+
+This method returns the cummulative return ('Equity Curve') of the calculated portfolio by parsing :code:`data` against :code:`weights`.
+It returns a timeseries DataFrame with timestamps and return values.  
+
+**Requires:** *int: period*
+
+**Returns** *Pandas DataFrame*
+
 Load Data
 *********
 
 Summarize
 **********
+
+.. code-block:: 
+
+    summary = Portfolio.summarize(period=365)
+
+This method returns a number of summary statistics of the specified Portfolio timeseries which can help in quantitative analysis. The return fields
+can be seen in the table below. *Expected* values represent calculations derived from the Mean. The Sortino, Draw Down, Calmar, Skew and Kurtosis, measures
+are derived from the full timeseries. The *Performed* values (Return, Vol, Sharpe) are calculated using the :code:`period` parameter 
+(i.e. 'PerformedReturn' for a period of 365 is 1YR return)
+
++-----------+----------+----------+-------------+---------+-------+--------+--------+------+--------+
+| Weights   | Exp. Ret | Exp. Vol | Exp. Sharpe | Sortino | MaxDD | Calmar | Return | Vol. | Sharpe |
++-----------+----------+----------+-------------+---------+-------+--------+--------+------+--------+
+
+**Requires:** *int: period*
+
+**Returns** *Pandas DataFrame*
 
 Monte Carlo Engine
 -------------------

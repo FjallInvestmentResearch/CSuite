@@ -16,36 +16,60 @@ as data retrival and order submission. A client can be easily created:
 To initiate the client one must provide a JSON file with the two API keys for Binance, indexed as 'API KEY' and 'SECRET KEY'.
 Once the client has been called successfully by providing up-to-date keys, the returned client object must be kept for later use.
 
+.. code:: JSON
+
+    {
+    "API_KEY" : "YOUR_API_KEY_HERE",
+    "SECRET_KEY" : "SECRET_KEY_HERE"
+    }
+    
+
+
 Get Spot Timeseries
 --------------------------
+.. code-block::
+
+    timeSeries = CSuite.get_SpotKlines(client, symbol, interval)
+
 Downloading timeseries (OCHL) data for a specific crypto made extremely easy through the Kline function, which returns a Pandas DataFrame
 with all the data: OCHL & Volume. The client is a required parameter, so is the symbol (Binance pair notation) and the interval which can be from
 '1m' to '4d'. Please note that this function will return the latest 1000 data-points.
 
-.. code-block::
+**Requires:** *obj: client*, *str: symbol*, *str: interval*
 
-    BTC = CSuite.get_SpotKlines(client, 'BTCUSDT', '1d')
+**Returns:** *Pandas DataFrame*
+
+
 
 Get Multiple Spot Timeseries
 *****************************
+.. code-block::
+
+    frame = CSuite.get_batch_historic(client, symbols, interval, mode')
+
 Since users often find themselves needing to download multiple timeseries at the same time, we provide the custom :code:`get_batch_historic()` function.
 This function allows the download of parrallel historical timeseries data for multiple crypto. Unlike the :code:`get_SpotKline()` function, this one requires an array of strings in the symbols parameter.
 It also supports multiple modes through the mode parameter, the following is supported:
 
-* Nominal - Closing Price ('N')
-* Return - Daily Closing % Return ('R')
-* Volatility - Rolling 5-day Standard Deviation ('V')
+* **Nominal** ('N'): Returns the non-normalised closing price of the pair. 
+* **Return** ('R'): Returns the daily percentage returns of the price timeseries. 
+* **Volatility** ('V'): Return the 5-Day rolling standard deviation of returns. 
+
+**Requires:** *obj: client*, *array of str: symbols*, *str: interval*, *str: mode*
+
+**Returns:** *Pandas DataFrame*
 
 
-.. code-block::
-
-    frame = CSuite.get_batch_historic(client, ['BTCUSDT', 'ADAUSDT'], '1d', 'N')
 
 Get Quote & Limit Order Book
 ----------------------------
 
 Viewing the Orderbook
 **********************
+.. code::
+
+    book = CSUite.view_book(client, symbol, limit=100)
+
 Retrieving the live limit order book (LOB) is the first step in accessing the real time market on the exchange. Using this limit order
 book functionality it is possible to have near-real time access to the access via equivalent DMA. The Binance API has a refresh rate of
 200ms for the book.
@@ -53,69 +77,99 @@ book functionality it is possible to have near-real time access to the access vi
 We can simply call the :code:`view_book()` function to get a snapshot of the book. It returns a
 ladder-like DataFrame with bid/ask volumes in num of tokens and Prices. The ticks are NOT uniform.
 
-.. code::
+**Requires:** *obj: client*, *str: symbol*, *int: limit*
 
-    book = CSUite.view_book(client, symbol='BNBUSDT', limit=100)
+**Returns:** *Pandas DataFrame*
+
 
 Get Quote
 **********
+.. code-block::
+
+    quote  = CSuite.get_quote(client, symbol)
+
 In certain use cases it may be useful to access only the best bid ask & volume at those ticks
 in such cases we offer a parsed version of the book function via :code:`get_quote()` which directly interacts
 with the Binance API for high speeds.
 
-.. code::
+**Requires:** *obj: client*, *str: symbol*
 
-    quote  = CSuite.get_quote(client, symbol='BTCUSDT')
+**Returns:** *Pandas DataFrame*
+
 
 Getting Symbol Trade Parameters
 *********************************
+.. code-block::
+   
+    info = get_symbol_info(client, symbol)
+
 We have also created a simplified way to parse the Exchange information necessary to execute automated trading
 details such as the trading status, tickSize, and minimum notional are included.
 
-.. code::
-    info = get_symbol_info(client, 'BNBUSDT')
+**Requires:** *obj: client*, *str: symbol*
+
+**Returns:** *Pandas DataFrame*
 
 Get Futures Data
 -----------------
+.. code-block::
+
+    future = CSuite.get_FutureKlines(client, symbol, interval)
+
 Alongside Spot functionality, the library supports retrieval and operation in the Binance Futures Market. It is possible to access futures Timeseries data through
 the provided functions. 
 The :code:`get_FutureKlines()` function works exactly like the :code:`get_SpotKline()` described above.
 
-.. code-block::
+**Requires:** *obj: client*, *str: symbol*, *str: interval*
 
-    BNB_PERP = CSuite.get_FutureKlines(client, 'BNBUSDT', '1d')
+**Returns:** *Pandas DataFrame*
 
 Get Futures-Spot Spread
 ************************
+.. code-block::
+
+    spread = get_FuturesSpread(client, symbol, interval)
+
 We have bundled the functionality of comparing the Spot and Futures by 
 downloading and parsing both :code:`get_FutureKlines()` & :code:`get_SpotKline()`. This is possible via the following:
 
-.. code-block::
+**Requires:** *obj: client*, *str: symbol*, *str: interval*
 
-    spread = get_FuturesSpread(client, 'BTCUSDT', '1m')
+**Returns:** *Pandas DataFrame*
 
 Get Futures Open Interest
 **************************
-The Open Interest statistic is available through Binance API and can be retived simply.
-
 .. code-block::
 
-    open_interest = get_FuturesOI(client, 'BTCUSDT', '30m')
+    open_interest = get_FuturesOI(client, symbol, period)
+
+The Open Interest statistic is available through Binance API and can be retived simply.
+
+**Requires:** *obj: client*, *str: symbol*, *str: period*
+
+**Returns:** *Pandas DataFrame*
 
 Get Futures Long-Short
 ***********************
 
 .. code-block::
 
-    long_short = get_FuturesLS(client, 'BTCUSDT, period)
+    long_short = get_FuturesLS(client, symbol, period)
+
+**Requires:** *obj: client*, *str: symbol*, *str: period*
+
+**Returns:** *Pandas DataFrame*
 
 Get Futures Funding Rate
 *************************
 
 .. code-block::
 
-    funding_rate = get_FuturesFundingRate(client, 'BTCUSDT', period)
+    funding_rate = get_FuturesFundingRate(client, symbol, period)
 
+**Requires:** *obj: client*, *str: symbol*, *str: period*
+
+**Returns:** *Pandas DataFrame*
 
 Options Data
 -----------------

@@ -20,7 +20,6 @@ This is a simple recipe to create the code to send a Buy order.
     # Order parameters are verified through the downloaded ledger which checks for minQty, minNominal etc.
     order = CSuite.LimitOrder(client, price, 1, 0, 'BNBUSDT', 'FOK').verified_submit(ledger)
 
-
 Tick-Match Buy
 ---------------
 This is a simple recipe to setup a order algorithm using the OrderEngine object.
@@ -38,3 +37,25 @@ This is a simple recipe to setup a order algorithm using the OrderEngine object.
 
     # Step 4: Start Algorithmic Execution
     BNB_COIN.tick_match(25, 3)
+
+Expected Sweep Cost
+--------------------
+This is a simple calculator which enables users to view the expected sweep cost of 
+hitting the book with a large block order at that time.
+
+.. code-block:: 
+
+    def sweep(pair, size):
+    # Step 0: Convert Size input into BUY/SELL side parameter
+    if size < 0:
+        side = 'SELL'
+    else:
+        side = 'BUY'
+    # Step 1: Connect with Binance Client for data
+    client = CSuite.connect_client('file.json')
+    # Step 2: Download Limit Order Book
+    book = CSuite..view_book(pair, client)
+    # Step 3: Calculate Expected Sweep Cost on a specified order of size with reference price being the Ask
+    frame = CSuite.sweep_cost(book[0], abs(size), pair, side, ref='A')
+
+    return frame

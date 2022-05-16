@@ -24,13 +24,13 @@ The Order Engine
 In certain cases it may be necessary that the order generation and submission is contained by a recording and managment object, in this case, that is the Order Engine.
 As an object, it contains the :code:`client`, symbol and, :code:`ledger`` (see above) and can be used to expedite and manage order submission and execusion processes for users necessitating a more streamlined interface.
 
-Setting up the Engine
+**Setting up the Engine:**
 :code:`engine = OrderEngine(client, 'BTCUSDT', ledger)`
 
-Building an Order
+**Building an Order:**
 :code:`order = engine.order('MKT', 1)`
 
-Submitting the Order
+**Submitting the Order:**
 :code:`order.submit()`
 
 .. warning:: Iceberg orders are currently not supported
@@ -70,7 +70,7 @@ converted into a TP or SL. For example passing a price of 100 and a stop of 120 
 
 One can generate a simply Limit Order as such. For example to build an order for 1 BNB token at 0 with
 no SL/TP and a 'GTC' time parameter.
-.. code::
+.. code-block:: 
     
     order = CSuite.LimitOrder(client, 300.0, 1, 'BNBUSDT', 0, 'GTC')`
 
@@ -116,7 +116,7 @@ converted into a TP or SL. For example passing a price of 100 and a stop of 120 
 
 One can generate a simple Market Order as such. For example to build an order for 1 BNB token with
 no SL/TP.
-.. code::
+.. code-block:: 
     
     order = CSuite.MarketOrder(client, 1, 'BNBUSDT', 0')`
 
@@ -130,13 +130,38 @@ Order Book Functions
 
 Build Ledger
 *************
-:code:`ledger = build_ledger(client, ['BTCUSDT', 'ADAUSDT', 'BNBUSDT'])`
+.. code-block::
+    
+    ledger = build_ledger(client, symbols)
+
+This function recives and formats exchange information for a list of tradable tokens on the exchange. The ledger may be used to help pass variables into
+execution algorithms. 
+
+**Requires:** *obj: client*, *arr of str: symbols*
+
+**Returns:** *Pandas DataFrame*
 
 Plot Limit Order Book
 **********************
 
 Expected Sweep Cost 
 *********************
+.. code-block:: 
+
+    esc = sweep_cost(book, size, symbol, side, ref)
+
+This method returns the expected cost of sweeping the book with a specified size block. It requires a :code:`book` object which is the first (indx: 0) 
+in the values returned by :code:`view_book()<https://csuite.readthedocs.io/en/latest/bconnector.html#viewing-the-orderbook>`_, the :code:`size` of the block order,
+the :code:`symbol` is for display purposes while the :code:`side` specifies whether it is a 'BUY' or 'SELL' order. The :code:`ref` parameter specifies the 
+starting reference price, for which are three options:
+
+* **Bid** ('B'): Start at the best bid, calculates aggresive sells or passive buys.
+* **Mid** ('M'): Start at the mid-point of the spread.
+* **Ask** ('A'): Start at the best ask, calculates aggresive buys or passive sells.
+
+**Requires:** *obj: book*, *float: size*, *str: symbol*, *str: side*, *str: ref*
+
+**Returns:** *Pandas DataFrame*
 
 Plot Expected Sweep Cost
 *************************

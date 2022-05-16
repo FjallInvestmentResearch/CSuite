@@ -16,6 +16,7 @@ as data retrival and order submission. A client can be easily created:
 To initiate the client one must provide a JSON file with the two API keys for Binance, indexed as 'API KEY' and 'SECRET KEY'.
 Once the client has been called successfully by providing up-to-date keys, the returned client object must be kept for later use.
 
+**Setup File Example**
 .. code:: JSON
 
     {
@@ -137,13 +138,19 @@ downloading and parsing both :code:`get_FutureKlines()` & :code:`get_SpotKline()
 
 **Returns:** *Pandas DataFrame*
 
+.. note:: 
+
+    The term :code:`period` in the following functions refers to the special interval of derivative statistics which includes the values
+    [5m, 15m, 30m, 1h, 2h, 4h, 6h, 12h, 1d]
+
 Get Futures Open Interest
 **************************
 .. code-block::
 
     open_interest = get_FuturesOI(client, symbol, period)
 
-The Open Interest statistic is available through Binance API and can be retived simply.
+The `Open Interest <https://en.wikipedia.org/wiki/Open_interest>`_ statistic refering to the volume of currently open contracts is available through Binance API and 
+can be retived simply using the relevant function.
 
 **Requires:** *obj: client*, *str: symbol*, *str: period*
 
@@ -156,6 +163,10 @@ Get Futures Long-Short
 
     long_short = get_FuturesLS(client, symbol, period)
 
+The `Long-Short <https://www.investopedia.com/terms/l/longshort-ratio.asp#:~:text=than%20for%20purchases.-,The%20long%2Dshort%20ratio%20represents%20the%20amount%20of%20a%20security,ratio%20indicating%20positive%20investor%20expectations.>`_ statistic of the Binance futures portfolios is also easily accessible as a timeseries.
+This function returns a DataFrame which contains the Accounts, Position and standard Long/Short Ratio as per Binance
+Docs.
+
 **Requires:** *obj: client*, *str: symbol*, *str: period*
 
 **Returns:** *Pandas DataFrame*
@@ -166,6 +177,8 @@ Get Futures Funding Rate
 .. code-block::
 
     funding_rate = get_FuturesFundingRate(client, symbol, period)
+
+The Futures Funding Rate of the Binance Exchange (i.e. the cost of going long futures), is also packaged. 
 
 **Requires:** *obj: client*, *str: symbol*, *str: period*
 

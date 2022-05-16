@@ -315,9 +315,9 @@ can be seen in the table below. *Expected* values represent calculations derived
 are derived from the full timeseries. The *Performed* values (Return, Vol, Sharpe) are calculated using the :code:`period` parameter 
 (i.e. 'PerformedReturn' for a period of 365 is 1YR return)
 
-+-----------+----------+----------+-------------+---------+-------+--------+--------+------+--------+
-| Weights   | Exp. Ret | Exp. Vol | Exp. Sharpe | Sortino | MaxDD | Calmar | Return | Vol. | Sharpe |
-+-----------+----------+----------+-------------+---------+-------+--------+--------+------+--------+
++-----------+----------+----------+-------------+---------+-------+--------+--------+------+--------+----+--------+
+| Weights   | Exp. Ret | Exp. Vol | Exp. Sharpe | Sortino | MaxDD | Calmar | Return | Vol. | Sharpe |Skew|Kurtosis|
++-----------+----------+----------+-------------+---------+-------+--------+--------+------+--------+----+--------+
 
 **Requires:** *int: period*
 
@@ -325,9 +325,33 @@ are derived from the full timeseries. The *Performed* values (Return, Vol, Sharp
 
 Monte Carlo Engine
 -------------------
+.. code-block:: 
+
+    mcEngine = MonteCarlo(client, symbols)
+
+The Monte Carlo Engine provides an efficient way for us to run Simulation of portfolio performance through shifting the
+:code:`weights` parameter. Through this wrapper we can view certain optimisation functionality aimed at **Long-Only Portfolios**.
+
+**Requires:** *obj: client*, *arr of str: symbols*
+
+**Returns** *obj: MonteCarlo*
 
 Run Simulation
 ***************
+.. code-block:: 
+
+    mcEngine = mcEngine.run(runs=5000)
+
+**Requires:** *int: runs*
+
+**Returns** *obj: MonteCarlo*
 
 Efficient Frontier
 ******************
+.. code-block:: 
+
+    mcEngine.eft()
+
+**Requires:** *Null*
+
+**Returns** *Pandas DataFrame*

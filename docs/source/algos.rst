@@ -151,7 +151,7 @@ Expected Sweep Cost
     esc = sweep_cost(book, size, symbol, side, ref)
 
 This method returns the expected cost of sweeping the book with a specified size block. It requires a :code:`book` object which is the first (indx: 0) 
-in the values returned by :code:`view_book()<https://csuite.readthedocs.io/en/latest/bconnector.html#viewing-the-orderbook>`_, the :code:`size` of the block order,
+in the values returned by `view_book()<https://csuite.readthedocs.io/en/latest/bconnector.html#viewing-the-orderbook>`_, the :code:`size` of the block order,
 the :code:`symbol` is for display purposes while the :code:`side` specifies whether it is a 'BUY' or 'SELL' order. The :code:`ref` parameter specifies the 
 starting reference price, for which are three options:
 

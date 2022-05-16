@@ -17,6 +17,7 @@ To initiate the client one must provide a JSON file with the two API keys for Bi
 Once the client has been called successfully by providing up-to-date keys, the returned client object must be kept for later use.
 
 **Setup File Example**
+
 .. code:: JSON
 
     {

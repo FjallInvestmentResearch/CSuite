@@ -29,21 +29,27 @@ class TimeSeries:
         return self
 
     # returns a summary statistic pandas data frame
-    def summarize(self, period=365):
-        timeSeries = self.data[self.col]
-        timeSeries = timeSeries[-period:].pct_change()
+    def summarize(self, period=365, pct=False):
+
+        if pct:
+            timeSeries = self.data[self.col]
+            timeSeries = timeSeries.dropna()
+        else:
+            timeSeries = self.data[self.col]
+            timeSeries = timeSeries.pct_change().dropna()
+
         downside = timeSeries[timeSeries.values < 0]
         sortino = ((timeSeries.mean()) * 365 - 0.01)/(downside.std()*np.sqrt(365))
         daily_draw_down = (timeSeries/timeSeries.rolling(center=False, min_periods=1, window=365).max())-1.0
         max_daily_draw_down = daily_draw_down.rolling(center=False, min_periods=1, window=365).min().min().round(4)
         calmar = round((timeSeries.mean()*365)/abs(max_daily_draw_down.min())*100, 4)
 
-        returnP = round(timeSeries[-365:].sum(), 4)
-        stdP = round(timeSeries[-365:].std()*np.sqrt(365), 4)
+        returnP = round(timeSeries[-period:].sum(), 4)
+        stdP = round(timeSeries[-period:].std()*np.sqrt(365), 4)
         sharpeP = round(returnP/stdP, 4)
 
-        skew = self.data[self.col].pct_change().skew()
-        kurt = self.data[self.col].pct_change().kurtosis()
+        skew = timeSeries.skew()
+        kurt = timeSeries.kurtosis()
 
         frame = pd.DataFrame(columns=['Return', 'Volatility', 'Sharpe', 'Sortino', 'MaxDrawDown', 'Calmar', 'Skew', 'Kurtosis'])
         frame.loc[0] = [round(returnP, 4)*100, round(stdP, 4)*100, round(sharpeP, 3), round(sortino, 3), round(max_daily_draw_down, 3), round(calmar, 3), round(skew, 3), round(kurt, 3)]

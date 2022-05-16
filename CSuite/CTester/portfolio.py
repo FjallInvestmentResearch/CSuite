@@ -1,6 +1,7 @@
 import pandas as pd
 import CSuite.CSuite.BConnector as connector
 import numpy as np
+import timeseries
 
 
 class Portfolio:
@@ -39,28 +40,25 @@ class Portfolio:
         std = np.sqrt(np.dot(np.array(self.weights).T, np.dot(cov_matrix, self.weights))) * np.sqrt(365)
         sharpe_ratio = round((returns-self.risk_free_rate)/std, 4)
         frame['Weights'] = [self.weights]
-        frame['ExpectedReturns'] = [round(returns, 4)]
-        frame['ExpectedVol'] = [round(std, 4)]
-        frame['ExpectedSharpe'] = [sharpe_ratio]
+        frame['ExpectedReturns'] = [round(returns, 3) *100]
+        frame['ExpectedVol'] = [round(std, 3) * 100]
+        frame['ExpectedSharpe'] = [round(sharpe_ratio, 3)]
 
         timeseries = self.get_timeseries(len(self.data)-1)
-        downside = timeseries[timeseries.values < 0]
-        sortino = ((timeseries.mean()) * 365 - 0.01)/(downside.std()*np.sqrt(365))
-        daily_draw_down = (timeseries/timeseries.rolling(center=False, min_periods=1, window=365).max())-1.0
-        max_daily_draw_down = daily_draw_down.rolling(center=False, min_periods=1, window=365).min().min().round(4)
-        calmar = round((timeseries.mean()*365)/abs(max_daily_draw_down.min())*100, 4)
-        frame['Sortino'] = [sortino.round(4)]
-        frame['MaxDrawDown'] = [max_daily_draw_down]
-        frame['Calmar'] = [calmar]
+        test_frame = pd.DataFrame(data=timeseries.values, index=timeseries.index, columns=['close'])
+        ts = timeseries.TimeSeries(None, test_frame).summarize(pct=True)
 
-        returnp = round(timeseries[-365:].sum(), 4)
-        stdp = round(timeseries[-365:].std()*np.sqrt(365), 4)
-        sharpep = round(returnp/stdp, 4)
-        frame['PerformedReturn'] = returnp
-        frame['PerformedVol'] = stdp
-        frame['PerformedSharpe'] = sharpep
+        frame['Sortino'] = ts['Sortino']
+        frame['MaxDrawDown'] = ts['MaxDrawDown']
+        frame['Calmar'] = ts['Calmar']
+        frame['PerformedReturn'] = ts['Return']
+        frame['PerformedVol'] = ts['Volatility']
+        frame['PerformedSharpe'] = ts['Sharpe']
 
         return frame
+
+    def equity_curve(self, period=365):
+        return self.get_timeseries(period).cumsum()
 
 
 class MonteCarlo:

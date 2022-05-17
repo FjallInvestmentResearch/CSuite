@@ -62,15 +62,16 @@ Summarize
 ***********
 .. code::
     
-    summary = TimeSeries.summarize(period=365)
+    summary = TimeSeries.summarize(period=365, pct=False)
 
 The :code:`summary()` method returns a formatted DataFrame of summary statistics for the timeseries.
+The :code:`pct` parameter Specifies if the data passed is in price or percentage terms. 
 
 +--------+------------+--------+---------+-------------+--------+------+----------+
 | Return | Volatility | Sharpe | Sortino | MaxDrawDown | Calmar | Skew | Kurtosis |
 +--------+------------+--------+---------+-------------+--------+------+----------+
 
-**Requires:** *int: period*
+**Requires:** *int: period*, *bool: pct*
 
 **Returns:** *Pandas DataFrame*
 
@@ -302,10 +303,18 @@ It returns a timeseries DataFrame with timestamps and return values.
 
 Load Data
 *********
+.. code-block:: 
+
+    Portfolio = Portfolio.load_data(data)
+
+This method enables us to bypass the data download phase of the portfolio by loading the :code:`data` object discretely.
+
+**Requires::** *Pandas DataFrame: data*
+
+**Returns:** *obj: Portfolio*
 
 Summarize
 **********
-
 .. code-block:: 
 
     summary = Portfolio.summarize(period=365)

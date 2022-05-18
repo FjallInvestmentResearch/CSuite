@@ -1,5 +1,5 @@
-import CSuite.CTrader as ct
 import numpy as np
+import CSuite.CSuite.CTrader as ct
 
 
 # Tick-Match Execution Algorithm
@@ -121,3 +121,27 @@ def mini_lot(client, symbol, size, tickSize, minQty, minNotional=10, retry=10):
             print('Order not Routed!')
             return False
         return record
+
+
+# Break-Even order mirroring algorithm
+def breakeven(client, symbol, orderId, offset, tickSize, stepSize):
+    order = client.get_order(symbol=symbol, orderId=orderId)
+    if order['status'] == 'FILLED':
+        if order['side'] == 'BUY':
+            n, m = -1, 1
+        elif order['side'] == 'SELL':
+            n, m = 1, -1
+        price, qty = float(order['price']), float(order['origQty'])
+        cost_basis = price * qty
+        total_fee = cost_basis - float(order['cummulativeQuoteQty'])
+        token_fee = total_fee/float(order['cummulativeQuoteQty'])
+
+        strike = round(price + (m*1.57*token_fee), int(abs(np.log10(tickSize))))
+        sub_qty = round(n*float(order['cummulativeQuoteQty'])/price, int(abs(np.log10(stepSize))))
+
+        t_strike = strike+(m*float(tickSize)*offset)
+        t_strike = float(str(t_strike)[:int(abs(np.log10(tickSize)))+3])
+
+        order = ct.orderEntry.LimitOrder(client, t_strike, sub_qty, symbol, 0, 'GTC')
+
+        return order

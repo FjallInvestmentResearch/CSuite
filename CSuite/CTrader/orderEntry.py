@@ -1,7 +1,7 @@
 # ORDER MANAGEMENT SYSTEM
 # Order object
 from binance.enums import *
-import CSuite.CTrader as C
+import CSuite.CSuite.CTrader as C
 
 
 # Limit Order is utilised to ensure exact execution price
@@ -316,3 +316,9 @@ class OrderEngine:
         return C.mini_lot(self.client, self.ticker, float(size), float(self.ledger.loc[self.ticker]['tickSize']),
                           float(self.ledger.loc[self.ticker]['stepSize']),
                           float(self.ledger.loc[self.ticker]['minNotional']), retry)
+
+    # Runs the breakeven algo requiring only offset
+    def breakeven(self, orderId, offset=0):
+        return C.orderAlgo.breakeven(self.client, orderId, self.orderId, offset,
+                                     float(self.ledger.loc[self.ticker]['tickSize']),
+                                     float(self.ledger.loc[self.ticker]['stepSize']))

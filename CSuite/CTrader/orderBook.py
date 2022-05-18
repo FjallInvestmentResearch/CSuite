@@ -1,6 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-import CSuite.CSuite as C
+import CSuite as C
 
 # Orderbook Functions
 

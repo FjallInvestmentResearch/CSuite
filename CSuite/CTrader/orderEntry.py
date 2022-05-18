@@ -1,7 +1,7 @@
 # ORDER MANAGEMENT SYSTEM
 # Order object
 from binance.enums import *
-import CSuite.CSuite.CTrader as C
+import CSuite.CTrader as C
 
 
 # Limit Order is utilised to ensure exact execution price

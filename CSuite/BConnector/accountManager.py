@@ -1,5 +1,5 @@
 import pandas as pd
-import CSuite
+import connector
 
 
 # Replaces Order History module
@@ -26,7 +26,7 @@ def get_trade_history(client, symbol):
 
     commission, side = [], []
     # Aggregate CAsset & isMaker fields into converted USDT basis commission (bidirectional)
-    for i in range(0,len(data.index)):
+    for i in range(0, len(data.index)):
         if data.CAsset.iloc[i] == 'USDT':
             if data.isMaker.iloc[i] is True:
                 commission.append(data.Commission.iloc[i])
@@ -38,7 +38,7 @@ def get_trade_history(client, symbol):
             else:
                 commission.append(-(data.Commission.iloc[i] * data.Price.iloc[i]))
     # Convert Side T/F boolean into String 'BUY'/'SELL'
-    for j in range(0,len(data.index)):
+    for j in range(0, len(data.index)):
 
         if data.Side.iloc[j]:
             side.append('BUY')
@@ -62,14 +62,17 @@ def adjust_fx_trades(client, symbol):
         try:
             data_array.append(get_trade_history(client, '{}{}'.format(symbol, currency)))
         except:
-            data_array.append(pd.DataFrame(columns=['Time', 'Symbol', 'ID', 'Price', 'Qty', 'Cost', 'Commission', 'Side']))
+            data_array.append(pd.DataFrame(columns=['Time', 'Symbol', 'ID', 'Price',
+                                                    'Qty', 'Cost', 'Commission', 'Side']))
     # get FOREX rate to pass into conversion
-    forex_rate = CSuite.ctrader.connector.get_SpotKlines(client, '{}USDT'.format(currencies[1]), '1d')
+    forex_rate = connector.get_SpotKlines(client, '{}USDT'.format(currencies[1]), '1d')
     spec_array, com = [], []
     # convert Purchase Price (PRICE) & Commission (COMMISSION) from FX to base
     for i in range(0, len(data_array[1])):
-        spec_array.append(data_array[1].iloc[i].Price * forex_rate[forex_rate.index == data_array[1].Time.iloc[i].strftime('%Y-%m-%d')].close.iloc[0])
-        com.append(data_array[1].iloc[i].Commission * forex_rate[forex_rate.index == data_array[1].Time.iloc[i].strftime('%Y-%m-%d')].close.iloc[0])
+        spec_array.append(data_array[1].iloc[i].Price * forex_rate[forex_rate.index == data_array[1].
+                          Time.iloc[i].strftime('%Y-%m-%d')].close.iloc[0])
+        com.append(data_array[1].iloc[i].Commission * forex_rate[forex_rate.index == data_array[1].
+                   Time.iloc[i].strftime('%Y-%m-%d')].close.iloc[0])
     # format return Frame
     data_array[1]['Price'] = spec_array
     data_array[1]['Commission'] = com

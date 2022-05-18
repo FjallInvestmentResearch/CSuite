@@ -1,4 +1,4 @@
-import CSuite.CSuite.CTrader as ct
+import CSuite.CTrader as ct
 import numpy as np
 
 

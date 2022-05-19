@@ -1,2 +1,2 @@
-import accountManager
-import connector
+from .accountManager import *
+from .connector import *

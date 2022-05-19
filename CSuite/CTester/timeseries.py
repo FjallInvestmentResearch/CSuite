@@ -1,5 +1,5 @@
 import pandas as pd
-import CSuite.BConnector as connector
+import CSuite.CSuite.BConnector.connector as connector
 import numpy as np
 import scipy.stats as stats
 import matplotlib.pyplot as plt
@@ -41,7 +41,7 @@ class TimeSeries:
         downside = timeSeries[timeSeries.values < 0]
         sortino = ((timeSeries.mean()) * 365 - 0.01)/(downside.std()*np.sqrt(365))
         daily_draw_down = (timeSeries/timeSeries.rolling(center=False, min_periods=1, window=365).max())-1.0
-        max_daily_draw_down = daily_draw_down.rolling(center=False, min_periods=1, window=365).min().min().round(4)
+        max_daily_draw_down = daily_draw_down.rolling(center=False, min_periods=1, window=365).min().min()
         calmar = round((timeSeries.mean()*365)/abs(max_daily_draw_down.min())*100, 4)
 
         returnP = round(timeSeries[-period:].sum(), 4)
@@ -51,8 +51,10 @@ class TimeSeries:
         skew = timeSeries.skew()
         kurt = timeSeries.kurtosis()
 
-        frame = pd.DataFrame(columns=['Return', 'Volatility', 'Sharpe', 'Sortino', 'MaxDrawDown', 'Calmar', 'Skew', 'Kurtosis'])
-        frame.loc[0] = [round(returnP, 4)*100, round(stdP, 4)*100, round(sharpeP, 3), round(sortino, 3), round(max_daily_draw_down, 3), round(calmar, 3), round(skew, 3), round(kurt, 3)]
+        frame = pd.DataFrame(columns=['Return', 'Volatility', 'Sharpe', 'Sortino',
+                                      'MaxDrawDown', 'Calmar', 'Skew', 'Kurtosis'])
+        frame.loc[0] = [round(returnP, 4)*100, round(stdP, 4)*100, round(sharpeP, 3), round(sortino, 3),
+                        round(max_daily_draw_down, 3), round(calmar, 3), round(skew, 3), round(kurt, 3)]
 
         return frame
 
@@ -106,6 +108,8 @@ class TimeSeries:
             adf = adfuller(self.data['close'], maxlag=maxlag, regression=regression)
         elif mode == 'L':
             adf = adfuller(np.log(self.data['close']), maxlag=maxlag, regression=regression)
+        else:
+            return False
         df = pd.DataFrame(columns=['adf', 'p-value', 'lags', 'NObs', 'cv_1%', 'cv_5%', 'cv_10%', 'ic'])
         ks = list(adf[0:4]) + list(adf[4].values()) + [adf[5]]
         df.loc[0] = ks

@@ -296,3 +296,41 @@ via OrderEngine Wrapper
 
     engine = OrderEngine(client, symbol, ledger)
     execution = engine.mini_lot(size, retry)
+
+Breakeven
+**********
+The Breakeven order algorithm is an algorithm which creates a mirror breakeven to an executed order, accounting for two way commission. It can enable users to 
+instantly build and submit mirror orders to close open balances when trading net-0 strategies. To better account for the needs of algorithmic traders the algorithm
+contains an offset parameter which specifies an additional move of the Limit Price into a value above breakeven.
+
++------------+------------+-----------+-----------+------------------------+
+| **Name**   | **Type**   |**Example**|**Default**|  **Decription**        |
++------------+------------+-----------+-----------+------------------------+
+| client     | Client     | Object    |  None     | API client             |
++------------+------------+-----------+-----------+------------------------+
+| symbol     | String     | 'BTCUSDT' |  None     | Binance symbol str     |
++------------+------------+-----------+-----------+------------------------+
+| orderId    | String     | 0,  1.25  |    0      | Order qty (neg = sell) |
++------------+------------+-----------+-----------+------------------------+
+| offset     | int        | 1         |    0      | offset from breakeven  |
++------------+------------+-----------+-----------+------------------------+
+| tickSize   | Float      | 0.001     |    0      | min tradable tick      |
++------------+------------+-----------+-----------+------------------------+
+| stepSize   | Float      | 0.1       |    0.1    | min Qty step size      |
++------------+------------+-----------+-----------+------------------------+
+
+Direct Access
+^^^^^^^^^^^^^^
+
+.. code-block::
+    
+    order = CSUite.breakeven(client, symbol, orderId, offset, tickSize, stepSize)
+
+
+via OrderEngine Wrapper
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: 
+
+    engine = OrderEngine(client, symbol, ledger)
+    order = engine.breakeven(orderId, offset=0)

@@ -1,5 +1,8 @@
 import numpy as np
+import pandas as pd
 import CSuite.CSuite.CTrader as ct
+import CSuite.CSuite.BConnector as bc
+from binance.exceptions import BinanceAPIException
 
 
 # Tick-Match Execution Algorithm
@@ -9,7 +12,7 @@ def tick_match(client, ticker, size, tickSize, distance=5, retry=10, refresh=2):
 
     for k in range(0, retry):
         # Get Live Quote
-        book = ct.orderBook.get_quote(client, ticker)
+        book = bc.get_quote(client, ticker)
         # Calculate order strike
         if size > 0:
             price = float(book[1][0]) - (distance*tickSize)
@@ -53,7 +56,7 @@ def midpoint_match(client, ticker, size, tickSize, retry=10):
     record = []
     for i in range(0, retry):
         # get the Limit Order Book and thus Best-Bid & Best-Ask
-        book = ct.orderBook.get_quote(client, ticker)
+        book = bc.get_quote(client, ticker)
         # Strike as Best-Bid + Spread/2
         best_bid, best_ask = float(book[1][0]), float(book[0][0])
         midpoint = round(best_bid + ((best_ask-best_bid)/2), 4)
@@ -86,7 +89,7 @@ def mini_lot(client, symbol, size, tickSize, minQty, minNotional=10, retry=10):
     record = []
     # Sequential submission
     for k in range(0, retry):
-        book = ct.connector.get_quote(client, symbol)
+        book = bc.get_quote(client, symbol)
         # choose between best bid or best ask based on direction
         if size > 0:
             strike = book[1][0]
@@ -145,3 +148,24 @@ def breakeven(client, symbol, orderId, offset, tickSize, stepSize):
         order = ct.orderEntry.LimitOrder(client, t_strike, sub_qty, symbol, 0, 'GTC')
 
         return order
+
+
+# Buy Portfolio algo that builds an order collection which when submitted buys the specified long-only portfolio
+def buy_portfolio(client, portfolio, balance, tickSize, stepSize):
+
+    comp = pd.DataFrame(data=[portfolio.weights, tickSize, stepSize], columns=portfolio.symbols)
+    orders = []
+    for token in comp.columns:
+        quote = float(bc.get_quote(client, token)[1][0])
+        nomSize = float(balance*comp[token][0])
+        size = round(nomSize/quote, int(abs(np.log10(comp[token][2]))))
+        quote = round(quote, int(abs(np.log10(comp[token][1]))))
+        print('Buy: {} units of {} at ${} a position size of {}%'
+              .format(size, token, quote, round((nomSize/balance)*100), 2))
+        order = ct.LimitOrder(client, quote, size, token, 0, 'GTC')
+        try:
+            order.test()
+            orders.append(order)
+        except BinanceAPIException:
+            return False
+    return orders

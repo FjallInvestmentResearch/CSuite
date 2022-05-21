@@ -144,6 +144,11 @@ execution algorithms.
 Plot Limit Order Book
 **********************
 
+.. image:: plots/book.jpg
+    :width: 350px
+    :height: 210px
+    :align: left
+
 Expected Sweep Cost 
 *********************
 .. code-block:: 
@@ -165,6 +170,12 @@ starting reference price, for which are three options:
 
 Plot Expected Sweep Cost
 *************************
+
+.. image:: plots/esc.jpg
+    :width: 350px
+    :height: 210px
+    :align: left
+
 
 Order Execution Algorithms
 ---------------------------

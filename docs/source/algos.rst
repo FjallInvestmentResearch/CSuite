@@ -1,7 +1,7 @@
 CTrader
 =================
 The CTrader component enables users to submit and manage orders on the exchange. This module interfaces with the 
-Limit Order Book functionality provided by :code:`view_book` & :code:`get_quote()`. Through this library users should
+Limit Order Book functionality provided by :code:`view_book` & :code:`get_quote`. Through this library users should
 be able to quickly develop production ready algorithms. 
 
 Setup & The Ledger
@@ -12,12 +12,14 @@ In order to build the ledger one needs to pass a list of symbols in String forma
 
 .. code::
 
-    client = CSuite.connect_client('setup.json')
+    client = CSuite.connect_client(filename)
 
-    ledger = CSUite.build_ledger(client, ['ADAUSDT', 'BNBUSDT'])
+    ledger = CSUite.build_ledger(client, symbols)
+
 
 Orders & Order Entry
 ---------------------
+
 
 The Order Engine
 *****************
@@ -25,10 +27,10 @@ In certain cases it may be necessary that the order generation and submission is
 As an object, it contains the :code:`client`, symbol and, :code:`ledger`` (see above) and can be used to expedite and manage order submission and execusion processes for users necessitating a more streamlined interface.
 
 **Setting up the Engine:**
-:code:`engine = OrderEngine(client, 'BTCUSDT', ledger)`
+:code:`engine = OrderEngine(client, symbol, ledger)`
 
 **Building an Order:**
-:code:`order = engine.order('MKT', 1)`
+:code:`order = engine.order(type, size)`
 
 **Submitting the Order:**
 :code:`order.submit()`
@@ -70,26 +72,56 @@ converted into a TP or SL. For example passing a price of 100 and a stop of 120 
 
 One can generate a simply Limit Order as such. For example to build an order for 1 BNB token at 0 with
 no SL/TP and a 'GTC' time parameter.
+
 .. code-block:: 
     
-    order = CSuite.LimitOrder(client, 300.0, 1, 'BNBUSDT', 0, 'GTC')`
+    order = CSuite.LimitOrder(client, 300.0, 1, 'BNBUSDT', 0, 'GTC')
+
+.. note:: These methods are available across all order types (LMT, MKT, PST)
 
 Submit
 ^^^^^^
-To submit a built order to the Binance Exchange the submit method of the Limit Order can be used. As such: :code:`order.submit()`
+To submit a built order to the Binance Exchange the submit method of the Limit Order can be used. It returns a filled order object with a
+specified :code:`status` and :code:`orderId`.
+
+.. code-block:: 
+    
+    sent_order = order.submit()
+
+**Requires:** *None*
+
+**Returns:** *obj: order*
 
 Test
 ^^^^^
 To validate a built order by submitting an identical test order the :code:`test()` method may be used. This is useful if order parameters must be verified fast
-as the call and response takes a mere 200ms. This is possible as such: :code:`order.test()`.
-Test routes the order through the Exchange filters but not to the matchine engine. If the order is valid a '{}' is returned.
+as the call and response takes a mere 200ms. :code:`test()` routes the order through the Exchange filters but not to the matchine engine. 
+If the order is valid a '{}' is returned.
+
+.. code-block:: 
+    
+    test_order = order.test()
+
+**Requires:** *None*
+
+**Returns:** *API response string*
 
 Cancel
 ^^^^^^
-To cancel a submitted order (one that has recived a valid :code:`orderId` variable) the cancel method can be used: :code:`order.cancel()`.
+To cancel a submitted order (one that has recived a valid :code:`orderId` variable) the cancel method can be used. This method returns the API response
+string. 
+
+.. code-block:: 
+    
+    status = order.cancel()
+
+**Requires:** *None*
+
+**Returns:** *order status string*
 
 Verify
 ^^^^^^
+This 
 
 Market Order
 ************
@@ -97,11 +129,11 @@ A market order is an instruction by an investor to a broker to buy or sell stock
 It is the default choice for buying and selling for most investors most of the time.That means that a market order will be completed nearly instantaneously at a price very 
 close to the latest posted price that the investor can see.
 
-Market Orders requires 4 parameters, the :code:`client` for data access and 3 order parameters. In limit orders passing a price is not necessary
+Market Orders requires 4 parameters, the :code:`client` for data access and 3 order parameters. In Market Orders passing a price is not necessary
 and however a so is a symbol (str) and quatity must be set, with the latter being used to specify trade direction, e.g. +10 (BUY) and -10 (SELL). 
-No :code:`timeInForce` parameter is necessary as all Market Orders are flagged for immedate execution. 
+The :code:`timeInForce` parameter is not necessary as all Market Orders are flagged for immedate execution. 
 
-Market Order supports a stop through the :code:`stop`  parameter which has a defualt value of 0. The stop is set as a nominal (price) value which is automatically
+Market Order supports a stop through the :code:`stop` parameter which has a defualt value of 0. The stop is set as a nominal (price) value which is automatically
 converted into a TP or SL. For example passing a price of 100 and a stop of 120 would imply a Take Profit (TP), conversly a stop of 80 would imply a Stop Loss (SL)
 
 +------------+------------+-----------+-----------+
@@ -114,15 +146,40 @@ converted into a TP or SL. For example passing a price of 100 and a stop of 120 
 | stop       | Float      | 0,  1.25  |    0      |
 +------------+------------+-----------+-----------+
 
-One can generate a simple Market Order as such. For example to build an order for 1 BNB token with
-no SL/TP.
+One can generate a simple Market Order as such. For example to build an order for 1 BNB token with no SL/TP.
+
 .. code-block:: 
     
-    order = CSuite.MarketOrder(client, 1, 'BNBUSDT', 0')`
+    order = CSuite.MarketOrder(client, 1, 'BNBUSDT', 0')
 
 
 Post-Only Order
 ****************
+
+A Post-Only order is a Limit Order which cannot be crossed with resting liquidity on the book, it can 
+only cross against Market Orders thus, ensuring that the order is treated as a Maker order. 
+
+Post-Only Orders requires 5 parameters, the :code:`client` for data access and 4 order parameters. In Limit orders passing a price is necessary
+and however a so is a symbol (str) and quatity must be set, with the latter being used to specify trade direction, e.g. +10 (BUY) and -10 (SELL). 
+The :code:`timeInForce` parameter is necessary but set to 'GTC' as defualt. 
+
+Post-Only Orders do not support a stop through the :code:`stop`.
+
++------------+------------+-----------+-----------+
+| **Name**   | **Type**   |**Example**|**Default**|
++------------+------------+-----------+-----------+
+| Size (Qty) | Float      | 15 or -50 |  None     |
++------------+------------+-----------+-----------+
+| Symbol     | String     | 'BTCUSDT' |  None     |
++------------+------------+-----------+-----------+
+| stop       | Float      | 0,  1.25  |    0      |
++------------+------------+-----------+-----------+
+
+One can generate a simple Market Order as such. For example to build an order for 1 BNB token with no SL/TP.
+
+.. code-block:: 
+    
+    order = CSuite.MarketOrder(client, 1, 'BNBUSDT', 0')
 
 
 Order Book Functions
@@ -149,6 +206,12 @@ Plot Limit Order Book
     :height: 210px
     :align: left
 
+This function allows users to quickly plot the current Limit Order Book (LOB) at a specified depth (:code:`limit`).
+
+**Requires:** *obj: book*, *str: symbol*, *int: limit*, *bool: plot*, *bool: save*, *str: path*
+
+**Returns:** *obj: book* & plots plt
+
 Expected Sweep Cost 
 *********************
 .. code-block:: 
@@ -156,7 +219,7 @@ Expected Sweep Cost
     esc = sweep_cost(book, size, symbol, side, ref)
 
 This method returns the expected cost of sweeping the book with a specified size block. It requires a :code:`book` object which is the first (indx: 0) 
-in the values returned by `view_book()<https://csuite.readthedocs.io/en/latest/bconnector.html#viewing-the-orderbook>`_, the :code:`size` of the block order,
+in the values returned by :code:`view_book`, the :code:`size` of the block order,
 the :code:`symbol` is for display purposes while the :code:`side` specifies whether it is a 'BUY' or 'SELL' order. The :code:`ref` parameter specifies the 
 starting reference price, for which are three options:
 
@@ -176,6 +239,12 @@ Plot Expected Sweep Cost
     :height: 210px
     :align: left
 
+This function utilises the Expected Sweep Cost (ESC) function above in order to calculate the cost of different sized blocks. This returns a plot which provides
+insight into the depth of the LOB and cost of large transactions. 
+
+**Requires:** *obj: book*, *str: symbol*, *int: max*, *int: inc*, *bool: plot*, *bool: save*, *str: path*
+
+**Returns:** *None*
 
 Order Execution Algorithms
 ---------------------------
@@ -345,3 +414,4 @@ via OrderEngine Wrapper
 
     engine = OrderEngine(client, symbol, ledger)
     order = engine.breakeven(orderId, offset=0)
+

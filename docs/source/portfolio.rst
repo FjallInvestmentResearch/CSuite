@@ -332,7 +332,7 @@ are derived from the full timeseries. The *Performed* values (Return, Vol, Sharp
 
 **Returns** *Pandas DataFrame*
 
-Monte Carlo Engine
+Long Only Portfolio
 -------------------
 .. code-block:: 
 
@@ -351,6 +351,10 @@ Run Simulation
 
     mcEngine = mcEngine.run(runs=5000)
 
+This method enables users to backtest the historic performance of randomly weighted portfolios of the specified symbols. The outcome of this method 
+is a filled *Pandas DataFrame* containing the timeseries information calculated via :code:`summary()` in the *timeseries* package. It also includes an 
+annualised expected calcuation of returns, volatility and sharpe by extrapolating the returns distribution. 
+
 **Requires:** *int: runs*
 
 **Returns** *obj: MonteCarlo*
@@ -359,8 +363,16 @@ Efficient Frontier
 ******************
 .. code-block:: 
 
-    mcEngine.eft()
+    mcEngine.eft(mode='E')
 
-**Requires:** *Null*
+This method returns the top-5 results calculated through :code:`run()` as per the Efficient Frontier Theory; that being sorted by Sharpe ratio.
+We provide the :code:`mode` parameter such that the sorting may be done via exppected returns or 1 year performed returns.
+
+**Acceptable Modes**
+
+* **Expected** ('E'): Returns the top-5 portfolios based on expected sharpe ratio of all timeseries data.
+* **Performed** ('P'): Returns the top-5 portfolios based on 1 year performed sharpe.
+
+**Requires:** *str: mode*
 
 **Returns** *Pandas DataFrame*

@@ -156,7 +156,7 @@ class Plotter:
     def plot_qq(self, period=365, mode='R', save=False):
         plt.clf()
         fig = plt.figure()
-        ax = fig.add_subplot(111)
+        ax = fig.add_subplot()
         if mode == 'R':
             stats.probplot(self.timeSeries.data[self.timeSeries.col].pct_change()[-period:], dist='norm', plot=ax)
         elif mode == 'V':

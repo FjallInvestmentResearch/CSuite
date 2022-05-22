@@ -1,5 +1,5 @@
 import pandas as pd
-import CSuite.BConnector as connector
+import CSuite.CSuite.BConnector as connector
 import numpy as np
 
 
@@ -39,7 +39,7 @@ class Portfolio:
         std = np.sqrt(np.dot(np.array(self.weights).T, np.dot(cov_matrix, self.weights))) * np.sqrt(365)
         sharpe_ratio = round((returns-self.risk_free_rate)/std, 4)
         frame['Weights'] = [self.weights]
-        frame['ExpectedReturns'] = [round(returns, 3) *100]
+        frame['ExpectedReturns'] = [round(returns, 3) * 100]
         frame['ExpectedVol'] = [round(std, 3) * 100]
         frame['ExpectedSharpe'] = [round(sharpe_ratio, 3)]
 
@@ -72,7 +72,7 @@ class MonteCarlo:
         self.client = client
 
     def run(self, runs=5000):
-        import_data = Portfolio(self.client, self.symbols, None, '1d', True).get_data()
+        import_data = Portfolio(self.client, self.symbols, None, '1d', True).data
         datums = []
         for i in range(1, runs):
             weights = np.random.random(len(self.symbols))
@@ -85,5 +85,11 @@ class MonteCarlo:
         self.frame = frame
         return self
 
-    def eft(self):
-        return self.frame.sort_values(by='ExpectedSharpe', ascending=False).head(5)
+    def eft(self, mode='E'):
+        if mode == 'E':
+            col = 'ExpectedSharpe'
+        elif mode == 'P':
+            col = 'PerformedSharpe'
+        else:
+            return False
+        return self.frame.sort_values(by=col, ascending=False).head(5).reset_index()

@@ -279,7 +279,6 @@ class PostOrder:
 class OrderEngine:
     client, ticker = None, ''
     ledger = None
-    orderId = ''
 
     def __init__(self, client, ticker, ledger):
         self.client = client
@@ -292,11 +291,12 @@ class OrderEngine:
 
         if type == 'LMT' and price != 0:
             tmp_order = LimitOrder(self.client, price, size, self.ticker, stop, timeInForce)
-            self.orderId = tmp_order.orderId
             return tmp_order
         elif type == 'MKT':
             tmp_order = MarketOrder(self.client, size, self.ticker, stop)
-            self.orderId = tmp_order.orderId
+            return tmp_order
+        elif type == 'PST':
+            tmp_order = PostOrder(self.client, price, size, self.ticker, timeInForce)
             return tmp_order
         else:
             return False
@@ -319,7 +319,7 @@ class OrderEngine:
 
     # Runs the breakeven algo requiring only offset
     def breakeven(self, orderId, offset=0):
-        return C.orderAlgo.breakeven(self.client, orderId, self.orderId, offset,
+        return C.orderAlgo.breakeven(self.client, self.ticker, orderId, offset,
                                      float(self.ledger.loc[self.ticker]['tickSize']),
                                      float(self.ledger.loc[self.ticker]['stepSize']))
 

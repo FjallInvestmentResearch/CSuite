@@ -59,6 +59,8 @@ converted into a TP or SL. For example passing a price of 100 and a stop of 120 
 +------------+------------+-----------+-----------+
 | **Name**   | **Type**   |**Example**|**Default**|
 +------------+------------+-----------+-----------+
+| client     | Client     | None      |  None     |
++------------+------------+-----------+-----------+
 | Price      | Float      | 0.5002    |  None     |
 +------------+------------+-----------+-----------+
 | Size (Qty) | Float      | 15 or -50 |  None     |
@@ -139,6 +141,8 @@ converted into a TP or SL. For example passing a price of 100 and a stop of 120 
 +------------+------------+-----------+-----------+
 | **Name**   | **Type**   |**Example**|**Default**|
 +------------+------------+-----------+-----------+
+| client     | Client     | None      |  None     |
++------------+------------+-----------+-----------+
 | Size (Qty) | Float      | 15 or -50 |  None     |
 +------------+------------+-----------+-----------+
 | Symbol     | String     | 'BTCUSDT' |  None     |
@@ -167,6 +171,8 @@ Post-Only Orders do not support a stop through the :code:`stop`.
 
 +------------+------------+-----------+-----------+
 | **Name**   | **Type**   |**Example**|**Default**|
++------------+------------+-----------+-----------+
+| client     | Client     | None      |  None     |
 +------------+------------+-----------+-----------+
 | Size (Qty) | Float      | 15 or -50 |  None     |
 +------------+------------+-----------+-----------+

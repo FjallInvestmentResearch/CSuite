@@ -39,21 +39,21 @@ class TimeSeries:
             timeSeries = timeSeries.pct_change().dropna()
 
         downside = timeSeries[timeSeries.values < 0]
-        sortino = ((timeSeries.mean()) * 365 - 0.01)/(downside.std()*np.sqrt(365))
-        daily_draw_down = (timeSeries/timeSeries.rolling(center=False, min_periods=1, window=365).max())-1.0
+        sortino = ((timeSeries.mean()) * 365 - 0.01) / (downside.std() * np.sqrt(365))
+        daily_draw_down = (timeSeries / timeSeries.rolling(center=False, min_periods=1, window=365).max()) - 1.0
         max_daily_draw_down = daily_draw_down.rolling(center=False, min_periods=1, window=365).min().min()
-        calmar = round((timeSeries.mean()*365)/abs(max_daily_draw_down.min())*100, 4)
+        calmar = round((timeSeries.mean() * 365) / abs(max_daily_draw_down.min()) * 100, 4)
 
         returnP = round(timeSeries[-period:].sum(), 4)
-        stdP = round(timeSeries[-period:].std()*np.sqrt(365), 4)
-        sharpeP = round(returnP/stdP, 4)
+        stdP = round(timeSeries[-period:].std() * np.sqrt(365), 4)
+        sharpeP = round(returnP / stdP, 4)
 
         skew = timeSeries.skew()
         kurt = timeSeries.kurtosis()
 
         frame = pd.DataFrame(columns=['Return', 'Volatility', 'Sharpe', 'Sortino',
                                       'MaxDrawDown', 'Calmar', 'Skew', 'Kurtosis'])
-        frame.loc[0] = [round(returnP, 4)*100, round(stdP, 4)*100, round(sharpeP, 3), round(sortino, 3),
+        frame.loc[0] = [round(returnP, 4) * 100, round(stdP, 4) * 100, round(sharpeP, 3), round(sortino, 3),
                         round(max_daily_draw_down, 3), round(calmar, 3), round(skew, 3), round(kurt, 3)]
 
         return frame
@@ -62,7 +62,7 @@ class TimeSeries:
     def lin_reg(self, period=365):
         timeSeries = self.data[self.col]
         timeSeries = timeSeries[-period:].pct_change().dropna()
-        returns = (timeSeries.cumsum()*100)+100
+        returns = (timeSeries.cumsum() * 100) + 100
         log_ts = np.log(returns)
         x = np.arange(len(log_ts))
         slope, intercept, r_value, p_value, std_err = stats.linregress(x, log_ts)
@@ -74,9 +74,9 @@ class TimeSeries:
     def seasonality(self):
 
         monthly = self.data.resample('BM')
-        monthly = (monthly.last().close - monthly.first().open)/monthly.first().open
+        monthly = (monthly.last().close - monthly.first().open) / monthly.first().open
 
-        monthly = monthly*100
+        monthly = monthly * 100
         frame = pd.DataFrame(data=list(zip(monthly.index, monthly.values)), columns=['timestamp', 'returns'])
         frame = frame.dropna()
         frame['positive'] = frame['returns'] > 0
@@ -138,14 +138,14 @@ class Plotter:
             ax.set_title('Cumulative Return of {}'.format(self.timeSeries.symbol))
             ax.set_ylabel('Return (%)')
             ax.set_xlabel('Time (Days)')
-            ax.plot(self.timeSeries.data[col][-period:].pct_change().cumsum()*100)
+            ax.plot(self.timeSeries.data[col][-period:].pct_change().cumsum() * 100)
             ax.axhline(0, color='black', linewidth=1, linestyle='--')
 
         elif mode == 'V':
             ax.set_title('7-Day Rolling Volatility for {}'.format(self.timeSeries.symbol))
             ax.set_ylabel('7-Day Rolling Std (%)')
             ax.set_xlabel('Time (Days)')
-            ax.plot(self.timeSeries.data[col][-period:].pct_change().cumsum().rolling(7).std()*100)
+            ax.plot(self.timeSeries.data[col][-period:].pct_change().cumsum().rolling(7).std() * 100)
             ax.axhline(0, color='black', linewidth=1, linestyle='-')
 
         plt.show()
@@ -160,7 +160,8 @@ class Plotter:
         if mode == 'R':
             stats.probplot(self.timeSeries.data[self.timeSeries.col].pct_change()[-period:], dist='norm', plot=ax)
         elif mode == 'V':
-            stats.probplot(self.timeSeries.data[self.timeSeries.col].pct_change()[-period:].rolling(7).std()*100, dist="norm", plot=ax)
+            stats.probplot(self.timeSeries.data[self.timeSeries.col].pct_change()[-period:].rolling(7).std() * 100,
+                           dist="norm", plot=ax)
         ax.set_title('Quantile-Quartile Plot for {} Return Distribution'.format(self.timeSeries.symbol))
         ax.axhline(0, color='black', linewidth=0.5, linestyle='--')
         ax.axvline(0, color='black', linewidth=0.5, linestyle='--')
@@ -214,8 +215,8 @@ class Plotter:
         plt.clf()
         benchmark = TimeSeries(self.timeSeries.client).download(benchmark, self.timeSeries.interval)
         frame = pd.DataFrame()
-        frame['data'] = self.timeSeries.data[self.timeSeries.col][-period:].pct_change().dropna().cumsum()*100
-        frame['bench'] = benchmark.data[self.timeSeries.col][-period:].pct_change().dropna().cumsum()*100
+        frame['data'] = self.timeSeries.data[self.timeSeries.col][-period:].pct_change().dropna().cumsum() * 100
+        frame['bench'] = benchmark.data[self.timeSeries.col][-period:].pct_change().dropna().cumsum() * 100
         frame['delta'] = frame['data'] - frame['bench']
         fig, ax = plt.subplots()
         if delta is False:
@@ -230,3 +231,65 @@ class Plotter:
         plt.legend()
         if save:
             plt.savefig('{}bench_{}.jpg'.format(self.path, self.timeSeries.symbol), dpi=800)
+
+
+class Spread(TimeSeries):
+
+    def __init__(self, data):
+        super().__init__(None, data)
+        self.slice('spread')
+
+    def VCEM_forecast(self, periods, lags, coints, backtest=False, confi=0.05, determ='ci'):
+        # import vector error correction model from statsmodels
+        from statsmodels.tsa.vector_ar.vecm import VECM
+        # if backtest then it excludes historic data for the forecast period such that the VCEM
+        # quality can be verified.
+        columns_gen = list(self.data.columns)
+        columns_gen.remove('spread')
+
+        if backtest:
+            ex_data = self.data[:-periods]
+        else:
+            ex_data = self.data
+        # setup & fit the data
+        vcem = VECM(endog=ex_data[columns_gen], k_ar_diff=lags, coint_rank=coints, deterministic=determ)
+        vcem = vcem.fit()
+        forecast = vcem.predict(periods, confi)
+        # create array of DataFrames with estimations
+        datums = []
+        for k in range(0, len(columns_gen)):
+            cols = ['Mid', 'Low', 'High']
+            frame = pd.DataFrame(columns=cols)
+            for i in range(0, 3):
+                tmp = pd.DataFrame(forecast[i])
+                frame[cols[i]] = tmp[k] * 100
+            datums.append(frame)
+        # create array of the implied spread estimations
+        implied_spread = datums[0] - datums[1]
+
+        return implied_spread
+
+
+class Pair:
+    symbols = []
+    client = None
+    data = None
+    interval = ''
+    spread = None
+
+    def __init__(self, client, symbols, interval, download=True):
+        self.client = client
+        self.symbols = symbols
+        self.interval = interval
+        if download:
+            self.download(client, symbols, interval)
+
+    def download(self, client, symbols, interval):
+        self.data = connector.batch_historic(client, symbols, interval, 'N')
+        return self
+
+    def get_spread(self):
+        tmp = self.data.pct_change()
+        tmp['spread'] = tmp[tmp.columns[0]] - tmp[tmp.columns[1]]
+        spr = Spread(tmp.dropna())
+        return spr

@@ -332,8 +332,8 @@ are derived from the full timeseries. The *Performed* values (Return, Vol, Sharp
 
 **Returns** *Pandas DataFrame*
 
-Long Only Portfolio
--------------------
+Long Only Portfolio Backtesting
+--------------------------------
 .. code-block:: 
 
     mcEngine = MonteCarlo(client, symbols)
@@ -376,3 +376,38 @@ We provide the :code:`mode` parameter such that the sorting may be done via expp
 **Requires:** *str: mode*
 
 **Returns** *Pandas DataFrame*
+
+Pairs Trading
+--------------
+.. code-block::
+
+    pair = CSuite.Pair(client, symbols, interval, download)
+
+We include a specialised Pairs Trading handler that allows users to easily analyse pair trading and other spread based startegies. A :code:`Pair` object 
+contains a customisable :code:`data` structure of DataFrame type, alongside a client, symbols and, an interval string.
+It is initailized with the :code:`download` parameter which specifies whether the data filed is filled using the :code:`batch_historic` function. 
+
+**Requires:** *obj: client*, *arr str: symbols*, *str: interval*, *bool: download*
+
+**Retuns:** *obj: Pair*
+
+The Spread
+***********
+.. code-block::
+
+    spread = pair.get_spread()
+
+A Pair contains a spread which is the difference in daily closing prices between the two timeseries. Since this in itself is a timeseries, it is a child class
+of the :code:`timeseries` object and can utilise functions like :code:`summarize` or :code:`adfuller`. The Spread can be created through the Pair object:
+
+.. note:: The :code:`Spread` can be plotted using the :code:`Plotter`
+
+**Requires:** *None*
+
+**Returns:** *obj: Spread*
+
+VCEM Forecast
+^^^^^^^^^^^^^
+.. code-block::
+
+    forecast = spread.VCEM_forecast(periods, lags, coints, backtest=False, confi=0.05, determ='ci')

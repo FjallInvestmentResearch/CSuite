@@ -211,6 +211,7 @@ class Plotter:
         if save:
             plt.savefig('{}acf_{}.jpg'.format(self.path, self.timeSeries.symbol), dpi=800)
 
+    # Plots against a benchmark
     def benchmark(self, benchmark='BTCUSDT', period=365, delta=False, save=False):
         plt.clf()
         benchmark = TimeSeries(self.timeSeries.client).download(benchmark, self.timeSeries.interval)

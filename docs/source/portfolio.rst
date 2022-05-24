@@ -411,3 +411,7 @@ VCEM Forecast
 .. code-block::
 
     forecast = spread.VCEM_forecast(periods, lags, coints, backtest=False, confi=0.05, determ='ci')
+
+**Requires:** *int: periods*, *int: lags*, *int: coints*, *bool: backtest*, *float: confi*, *str: determ*
+
+**Returns:** *DataFrame: forecast*

@@ -240,6 +240,34 @@ class Spread(TimeSeries):
         super().__init__(None, data)
         self.slice('spread')
 
+    def johansen(self, maxLags):
+        from statsmodels.tsa.vector_ar.vecm import coint_johansen
+
+        # uses https://nbviewer.jupyter.org/github/mapsa/seminario-doc-2014/blob/master/cointegration-
+        # example.ipynb to create functions to return the number of cointegrating vectors based
+        # on the Trace version if the Johansen Cointegration Test
+        def johansen_trace(y, p):
+            N, l = y.shape
+            joh_trace = coint_johansen(y, 0, p)
+            r = 0
+            for i in range(l):
+                if joh_trace.lr1[i] > joh_trace.cvt[i, 1]:     # 0: 90%  1:95% 2: 99%
+                    r = i + 1
+            joh_trace.r = r
+
+            return joh_trace
+
+        # loops through 1 to 10 lags of trading days trading days
+        columns_gen = list(self.data.columns)
+        columns_gen.remove('spread')
+        for i in range(1, maxLags):
+            # tests for cointegration at i lags
+            joh_trace = johansen_trace(self.data[columns_gen], i)
+            # prints the results
+            print('Using the Trace Test, there are', joh_trace.r, '''cointegrating vectors at %s lags between the specified pair''' % i)
+            # prints a space for readability
+            print()
+
     def VCEM_forecast(self, periods, lags, coints, backtest=False, confi=0.05, determ='ci'):
         # import vector error correction model from statsmodels
         from statsmodels.tsa.vector_ar.vecm import VECM

@@ -406,6 +406,15 @@ of the :code:`timeseries` object and can utilise functions like :code:`summarize
 
 **Returns:** *obj: Spread*
 
+Johansen test
+^^^^^^^^^^^^^^
+.. code-block:: 
+    spread.johansen(maxLags=20)
+
+**Requires:** *int: maxLags*
+
+**Return:** *null*
+
 VCEM Forecast
 ^^^^^^^^^^^^^
 .. code-block::

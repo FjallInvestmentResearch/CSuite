@@ -409,6 +409,7 @@ of the :code:`timeseries` object and can utilise functions like :code:`summarize
 Johansen test
 ^^^^^^^^^^^^^^
 .. code-block:: 
+    
     spread.johansen(maxLags=20)
 
 **Requires:** *int: maxLags*
@@ -420,6 +421,8 @@ VCEM Forecast
 .. code-block::
 
     forecast = spread.VCEM_forecast(periods, lags, coints, backtest=False, confi=0.05, determ='ci')
+
+The :code:`VCEM_forecast` method enables users to easy get a forward prediction of a cointegratable spread using the Vector Error Correction Model.  
 
 **Requires:** *int: periods*, *int: lags*, *int: coints*, *bool: backtest*, *float: confi*, *str: determ*
 

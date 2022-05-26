@@ -3,6 +3,7 @@ import CSuite.CSuite.BConnector.connector as connector
 import numpy as np
 import scipy.stats as stats
 import matplotlib.pyplot as plt
+import CSuite.CSuite.utils as Cutil
 
 
 class TimeSeries:
@@ -313,6 +314,11 @@ class Pair:
         if download:
             self.download(client, symbols, interval)
 
+    def load_data(self, data, interval):
+        self.data = data
+        self.interval = interval
+        return self
+
     def download(self, client, symbols, interval):
         self.data = connector.batch_historic(client, symbols, interval, 'N')
         return self
@@ -322,3 +328,22 @@ class Pair:
         tmp['spread'] = tmp[tmp.columns[0]] - tmp[tmp.columns[1]]
         spr = Spread(tmp.dropna())
         return spr
+
+    def VCEM_backtest(self, lags, coint, periods=2, start=100, determ='ci'):
+        import warnings
+        warnings.simplefilter(action='ignore')
+        data = self.data
+
+        results = pd.DataFrame(columns=['Low', 'Mid', 'High'])
+        for i in range(start, len(data), periods):
+            Cutil.progress(i, len(data), status='')
+            tmp_pair = Pair(self.client, self.symbols, '', False)
+            tmp_pair = tmp_pair.load_data(data[:i], '')
+            tmp_spread = tmp_pair.get_spread()
+
+            results = results.append(tmp_spread.VCEM_forecast(periods, lags, coint, False, 0.05, determ))
+
+        results.index = data[start:].index
+        results['spread'] = self.get_spread().data['spread']
+
+        return results

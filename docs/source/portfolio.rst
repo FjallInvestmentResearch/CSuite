@@ -422,7 +422,14 @@ VCEM Forecast
 
     forecast = spread.VCEM_forecast(periods, lags, coints, backtest=False, confi=0.05, determ='ci')
 
-The :code:`VCEM_forecast` method enables users to easy get a forward prediction of a cointegratable spread using the Vector Error Correction Model.  
+The :code:`VCEM_forecast` method enables users to easy get a forward prediction of a cointegratable spread using the Vector Error Correction Model. It returns a timeseries of the
+upper, lower and, mid band estimates of the expected value of the spread over the forecast period (:code:`periods`). The forecast is only possible through the lags and cointegration parameters
+which are derived from the the Johansen Test (:code:`johansen()`). 
+The backtest option enables users to quickly verify data against the timeseries itself. If set to True, the forecast will be calculated on the timeseries excluding the latest 
+:code:`periods` datapoints. Then that forecast can be compared to the timeseries manually. 
+The final two parameters namely, :code:`confi` and :code:`determ` specify the VCEM setup, the first is the confidence interval, set at 5% and the second, the deterministic terms 
+which are derived from the `statsmodels VCEM function <https://www.statsmodels.org/stable/generated/statsmodels.tsa.vector_ar.vecm.VECM.html#statsmodels.tsa.vector_ar.vecm.VECM>`_ which we use here.
+This setting defauls to 'Constant with Cointegration Relation'.
 
 **Requires:** *int: periods*, *int: lags*, *int: coints*, *bool: backtest*, *float: confi*, *str: determ*
 

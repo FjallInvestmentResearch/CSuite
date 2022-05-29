@@ -377,6 +377,7 @@ We provide the :code:`mode` parameter such that the sorting may be done via expp
 
 **Returns** *Pandas DataFrame*
 
+
 Pairs Trading
 --------------
 .. code-block::

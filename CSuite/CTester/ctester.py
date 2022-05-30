@@ -1,6 +1,8 @@
 import backtrader as bt
 
 
+# Built in indicators that add functionality beyond the basics of backtrader
+
 # Money Flow Indicator
 # Retrieved through BackTrader recopies
 # https://www.backtrader.com/recipes/indicators/mfi/mfi/
@@ -98,6 +100,88 @@ class KlingerOsc(bt.Indicator):
         self.lines.sig = bt.indicators.EMA(self.lines.kvo, period=self.p.sigPeriod)
 
 
+# Schaff Trend Cycle
+class SchaffTrendCycle(bt.Indicator):
+
+    lines = ('schaff','macd','f1','f2','pf')
+
+    params = (
+        ('fast', 23),
+        ('slow', 50),
+        ('cycle', 10),
+        ('factor', 0.5)
+    )
+
+    plotinfo = dict(
+        plot=True,
+        plotname='Schaff Trend Cycle',
+        subplot=True,
+        plotlinelabels=True)
+
+    plotlines = dict(macd=dict(_plotskip=True, ),
+                     f1=dict(_plotskip=True, ),
+                     f2=dict(_plotskip=True, ),
+                     pf=dict(_plotskip=True, ),
+                     )
+
+    def __init__(self):
+        # Plot horizontal Line
+        self.plotinfo.plotyhlines = [25,75]
+
+
+        self.addminperiod(self.p.slow)
+        self.l.macd = bt.indicators.MACD(self.data,period_me1=self.p.fast,period_me2=self.p.slow)
+
+    def prenext(self):
+
+        self.l.f1[0] = self.data.close[0]
+        self.l.pf[0] = self.data.open[0]
+        self.l.f2[0] = self.data.high[0]
+        self.l.schaff[0] = self.data.low[0]
+
+    def next(self):
+
+        v1 = min(self.l.macd.get(size=self.p.cycle))
+        v2 = max(self.l.macd.get(size=self.p.cycle))-v1
+
+        self.l.f1[0] = 100*(self.l.macd[0]-v1)/v2 if v2 > 0 else self.l.f1[-1]
+        self.l.pf[0] = self.l.pf[-1] + (self.p.factor*(self.l.f1[0]-self.l.pf[-1]))
+
+        v3 = min(self.l.pf.get(size=self.p.cycle))
+        v4 = max(self.l.pf.get(size=self.p.cycle))-v3
+
+        self.l.f2[0] = 100*(self.l.pf[0]-v3)/v4 if v4 > 0 else self.l.f2[-1]
+        self.l.schaff[0] = self.l.schaff[-1] + (self.p.factor*(self.l.f2[0]-self.l.schaff[-1]))
+
+
+# VWAP Indicator
+class VolumeWeightedAveragePrice(bt.Indicator):
+    plotinfo = dict(subplot=False)
+
+    params = (('period', 30), ('mult', 0.025) )
+
+    alias = ('VWAP', 'VolumeWeightedAveragePrice',)
+    lines = ('VWAP','low', 'high')
+    plotlines = dict(VWAP=dict(alpha=0.50, linestyle='-.', linewidth=2.0), low=dict(alpha=0.50, linestyle='-.', linewidth=2.0), high=dict(alpha=0.50, linestyle='-.', linewidth=2.0))
+
+
+
+    def __init__(self):
+        # Before super to ensure mixins (right-hand side in subclassing)
+        # can see the assignment operation and operate on the line
+        cumvol = bt.ind.SumN(self.data.volume, period = self.p.period)
+        typprice = ((self.data.close + self.data.high + self.data.low)/3) * self.data.volume
+        cumtypprice = bt.ind.SumN(typprice, period=self.p.period)
+        self.lines[0] = cumtypprice / cumvol
+        vol = bt.indicators.SumN((self.data.close - (cumtypprice / cumvol))**2, period=self.p.period)
+        vol = ((1/self.p.period)*vol)**0.5
+
+        self.lines[1] = self.lines[0] - (vol*(1+self.p.mult))
+        self.lines[2] = self.lines[0] + (vol*(1+self.p.mult))
+
+        super(VolumeWeightedAveragePrice, self).__init__()
+
+
 # Proprietary Backtrader Strategies for use with CTester
 
 
@@ -117,7 +201,7 @@ class ThreeXTrend(bt.Strategy):
     def next(self):
         # BUY LOGIC
         if self.RSI > 50 + self.params.rsi_bandwidth and self.data.close > self.SMA:
-            self.buy(size=(self.params.order_size/self.data.close), trailpercent=5, exectype=bt.Order.StopLimit)
+            self.buy(size=(self.params.order_size / self.data.close), trailpercent=5, exectype=bt.Order.StopLimit)
 
         # SELL LOGIC
         elif self.RSI < 50 - self.params.rsi_bandwidth and self.data.close < self.SMA:
@@ -142,7 +226,7 @@ class TripleCCP(bt.Strategy):
     def next(self):
         # BUY LOGIC
         if self.RSI > 50 + self.params.rsi_bandwidth and self.data.close > self.SMA:
-            self.buy(size=(self.params.order_size/self.data.close), trailpercent=5, exectype=bt.Order.StopLimit)
+            self.buy(size=(self.params.order_size / self.data.close), trailpercent=5, exectype=bt.Order.StopLimit)
 
         # SELL LOGIC
         elif self.RSI > 70 and self.MFI > 70 and self.SRSI > 0.70:
@@ -182,6 +266,7 @@ class CrossoverStrategy(bt.Strategy):
             self.log('SELL, %.2f' % self.dataclose[0])
 
 
+# Dollar Cost Averaging Strategy.
 class DCAStartegy(bt.Strategy):
     params = (
         ('rsi_period', 7),
@@ -195,4 +280,4 @@ class DCAStartegy(bt.Strategy):
 
     def next(self):
         if self.RSI < self.params.rsi_signal:
-            self.buy(size=(self.params.order_size/self.data.close))
+            self.buy(size=(self.params.order_size / self.data.close))

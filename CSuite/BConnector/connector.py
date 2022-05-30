@@ -33,6 +33,24 @@ def get_SpotKlines(client, symbol, interval):
     return df
 
 
+def get_HistoricKlines(client, symbol, interval, startTime, endTime):
+    # download data from the Binance API
+    # keys are stored in a JSON file and Timeseries ticker and scope is manual (for now)
+    klines = client.get_historical_klines(symbol, interval, startTime, endTime)
+    df = pd.DataFrame(klines)
+    df.columns = [
+        "timestamp", "open", "high", "low", "close", "volume", "closetime", "quote_av",
+        "trades", "tb_base_ab", "tv_quote_av", "ignore"]
+
+    df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
+    df.set_index("timestamp", inplace=True)
+    df = df[["open", "high", "low", "close", "volume"]]
+    for label in df.columns:
+        df[label] = df[label].astype(float)
+    # above lines parse the dataframe from download to ML format for our system
+    return df
+
+
 def batch_historic(client, symbols, interval, mode):
     frame = pd.DataFrame()
     for symbol in symbols:

@@ -1,9 +1,9 @@
 import pandas as pd
-import CSuite.CSuite.BConnector.connector as connector
+import CSuite.BConnector.connector as connector
 import numpy as np
 import scipy.stats as stats
 import matplotlib.pyplot as plt
-import CSuite.CSuite.utils as Cutil
+import CSuite.utils as Cutil
 
 
 class TimeSeries:

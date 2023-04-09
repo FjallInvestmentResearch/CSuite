@@ -1,5 +1,5 @@
 import pandas as pd
-import connector
+import CSuite.BConnector.connector as connector
 
 
 # Replaces Order History module

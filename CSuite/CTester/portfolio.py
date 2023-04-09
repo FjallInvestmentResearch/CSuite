@@ -1,5 +1,5 @@
 import pandas as pd
-import CSuite.CSuite.BConnector as connector
+import CSuite.BConnector as connector
 import numpy as np
 
 

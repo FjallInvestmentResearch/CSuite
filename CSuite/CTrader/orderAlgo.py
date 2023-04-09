@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
-import CSuite.CSuite.CTrader as ct
-import CSuite.CSuite.BConnector as bc
+import CSuite.CTrader as ct
+import CSuite.BConnector as bc
 from binance.exceptions import BinanceAPIException
 
 
@@ -169,3 +169,32 @@ def buy_portfolio(client, portfolio, balance, tickSize, stepSize):
         except BinanceAPIException:
             return False
     return orders
+
+
+# VWAP
+def vwap(client, ticker, size, tickSize, timeframe):
+    data = bc.get_SpotKlines(client, ticker, timeframe)
+
+    avg = round(data.volume.mean(), 2)
+    min_step_size = 10 / data[:-1].close[0]
+    est_step_size = (size / avg) * size
+    maximum_size = 0.05 * avg
+    units = min_step_size
+
+    if est_step_size > maximum_size:
+        units = maximum_size
+    elif est_step_size > min_step_size:
+        units = est_step_size
+    elif est_step_size < min_step_size:
+        if size < 2 * min_step_size:
+            units = size
+        else:
+            units = min_step_size
+
+    steps = round(size/units, 0)
+    unit_size = round(units, int(abs(np.log10(tickSize))))
+    wait = ((data.index[1] - data.index[0]).total_seconds())
+
+    for i in range(0, steps):
+        pass
+

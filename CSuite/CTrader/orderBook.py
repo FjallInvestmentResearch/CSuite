@@ -1,6 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-import CSuite.CSuite.BConnector as bc
+import CSuite.BConnector as bc
 
 # Orderbook Functions
 
@@ -54,23 +54,18 @@ def sweep_cost(book, size, pair='NA', side='BUY', ref='A'):
                 / (best_ask['ask_vol']+best_bid['bid_vol']))
 
     fill = 0
+    price = 0
 
     if side == 'BUY':
         for i in range(len(asks)-1, 0, -1):
             fill = fill + book['ask_vol'][i]
             if fill >= size:
                 price = (book['quote'][i+1])
-                break
-
     elif side == 'SELL':
         for i in range(len(asks), len(book)):
             fill = fill + book['bid_vol'][i]
             if fill >= size:
                 price = (book['quote'][i-1])
-                break
-
-    else:
-        price = 0
 
     if ref == 'A':
         ref_price = best_ask['quote']
@@ -106,7 +101,6 @@ def plot_esc(book, symbol, max=100, inc=1, plot=True, save=False, path=''):
         plt.plot([i for i in range(0, max)], results[0:max][::-1], color='r', label='Selling')
         plt.plot([i for i in range(0, max)], results[max-1:max*2], color='g', label='Buying')
         plt.legend()
-        plt.ylim(0, 0.35)
         plt.xlabel('Lot Size (Units)')
         plt.ylabel('Expected Sweep Cost (%)')
         plt.title('Expected Sweep Cost by Lot Size')
